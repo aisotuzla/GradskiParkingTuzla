@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="bs" class="dark">
+  <head>
+    <script>
+      (function() {
+        try {
+          var target = window;
+          var desc = Object.getOwnPropertyDescriptor(target, 'fetch');
+          if (!desc) {
+            target = Object.getPrototypeOf(window);
+            desc = Object.getOwnPropertyDescriptor(target, 'fetch');
+          }
+          if (desc && desc.configurable && !desc.set) {
+            var origFetch = window.fetch;
+            Object.defineProperty(target, 'fetch', {
+              get: function() { return origFetch; },
+              set: function(v) { origFetch = v; },
+              configurable: true,
+              enumerable: true
+            });
+          }
+        } catch (e) {
+          // Ignore
+        }
+      })();
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Tuzla Parking - Pametni Parking & Navigacija</title>
+    <meta name="theme-color" content="#0a1128" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="description" content="PWA Aplikacija za SMS plaćanje parkinga i navigaciju u Tuzli" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  </head>
+  <body class="bg-[#0a1128] text-slate-100 antialiased overflow-x-hidden selection:bg-[#d4af37] selection:text-[#0a1128]">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch((err) => {
+            console.log('SW registration failed:', err);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>
+

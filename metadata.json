@@ -1,0 +1,6 @@
+{
+  "name": "Tuzla Parking",
+  "description": "Mobile-optimized smart parking assistant and offline map for Tuzla, Bosnia & Herzegovina with SMS payments, navigation, and zone detection.",
+  "requestFramePermissions": ["geolocation", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

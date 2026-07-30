@@ -1,0 +1,22 @@
+{
+  "short_name": "TuzlaPark",
+  "name": "Tuzla Parking - Smart Parking & Navigation",
+  "icons": [
+    {
+      "src": "/pwa-icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/pwa-icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0B192C",
+  "theme_color": "#0B192C",
+  "display": "standalone",
+  "orientation": "portrait",
+  "categories": ["navigation", "transportation", "utilities"]
+}
