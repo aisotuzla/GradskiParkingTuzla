@@ -12,7 +12,7 @@ export function getSmsNumber(zone: ParkingZone, isDayTicket: boolean): string {
 export const ZONE_DETAILS: Record<ParkingZone, ZoneDetails> = {
   '0': {
     zone: '0',
-    name: 'Zona 0 (Centar - Crvena)',
+    name: 'Zona 0 (Centar)',
     hourlyPrice: 2.0,
     dailyPrice: 6.0,
     shortCode: '0833510',
@@ -24,7 +24,7 @@ export const ZONE_DETAILS: Record<ParkingZone, ZoneDetails> = {
   },
   '1': {
     zone: '1',
-    name: 'Zona 1 (Šira Zona - Plava)',
+    name: 'Zona 1 (Šira Zona)',
     hourlyPrice: 1.0,
     dailyPrice: 4.0,
     shortCode: '0833511',
@@ -36,7 +36,7 @@ export const ZONE_DETAILS: Record<ParkingZone, ZoneDetails> = {
   },
   '2': {
     zone: '2',
-    name: 'Zona 2 (Periferija - Zelena)',
+    name: 'Zona 2 (Periferija)',
     hourlyPrice: 0.5,
     dailyPrice: 3.0,
     shortCode: '0833512',
@@ -259,7 +259,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     name: "Parking Turalibegova",
     area: "Centar",
     address: "Turalibegova 59",
-    coordinates: [18.6792208, 44.536256],
+    coordinates: [44.536256, 18.6792208],
     features: ["Automated ticketing", "High-turnover commercial area"],
     zone: "0",
     hourlyPrice: 2.0,

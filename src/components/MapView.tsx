@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import L from 'leaflet';
+import L, { type CircleMarker, type Polyline, type LayerGroup, type Marker } from 'leaflet';
 import { Locate, Navigation, MapPin, Layers, Compass, Zap, Shield, Info } from 'lucide-react';
 import { Language, NavigationRoute, ParkingLotData, ParkingZone, UserLocation } from '../types';
 import { ZONE_DETAILS, TUZLA_PARKING_ZONE_POLYGON, ZONA_1_POLYGONS, ZONA_2_POLYGONS } from '../data/parkingData';
@@ -7,6 +7,8 @@ import * as maplibregl from 'maplibre-gl';
 import NavigationHUD from '../services/NavigationHUD';
 import { calculateRoute } from '../services/routingService';
 import { TRANSLATIONS } from '../data/translations';
+
+
 
 interface MapViewProps {
   parkingLots: ParkingLotData[];
@@ -39,60 +41,49 @@ export const MapView: React.FC<MapViewProps> = ({
   //Maplibre-GL
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<{ [id: string]: L.Marker }>({});
-  const polygonGroupRef = useRef<L.LayerGroup | null>(null);
-  const userMarkerRef = useRef<L.CircleMarker | null>(null);
-  const routePolylineRef = useRef<L.Polyline | null>(null);
+  const markersRef = useRef<{ [id: string]: Marker }>({});
+  const polygonGroupRef = useRef<LayerGroup | null>(null);
+  const userMarkerRef = useRef<CircleMarker | null>(null);
+  const routePolylineRef = useRef<Polyline | null>(null);
 
   const t = TRANSLATIONS[currentLang];
-  const [showBuildings, setShowBuildings] = React.useState(false);
-  const buildingLayerRef = useRef<L.GeoJSON | null>(null);
 
-  const map = new maplibregl.Map({
-    container: 'my-map',
-    style: 'https://maps.geoapify.com/v1/styles/osm-bright/style.json?apiKey=YOUR_API_KEY',
-  });
-
-  map.on('load', () => {
-    map.setPaintProperty('park', 'fill-color', '#92ba69');
-    map.setPaintProperty('park-outline', 'line-color', 'rgba(83,177,20,0.66)');
-    map.setPaintProperty('landcover-wood', 'fill-color', '#69c43b');
-    map.setPaintProperty('landcover-grass', 'fill-color', '#addc7f');
-    map.setPaintProperty('landcover-grass-park', 'fill-color', '#cae2b2');
-    map.setPaintProperty('building', 'fill-color', '#93939c');
-    map.setPaintProperty('building-top', 'fill-color', '#becad3');
-    map.setPaintProperty('highway-secondary-tertiary-casing', 'line-color', '#f6a55f');
-    map.setPaintProperty('highway-path', 'line-color', '#b57e47');
-    map.setPaintProperty('highway-minor', 'line-color', '#ffffff');
-    map.setPaintProperty('highway-secondary-tertiary', 'line-color', '#f4ec4b');
-    map.setPaintProperty('highway-primary', 'line-color', '#f1d669');
-  });
   // Initialize Leaflet Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
     if (mapInstanceRef.current) return;
 
-    const defaultCenter: [number, number] = [44.538, 18.675];
+  });
 
-    const map = L.map(mapContainerRef.current, {
-      center: defaultCenter,
-      zoom: 15,
-      minZoom: 13,
-      maxZoom: 20,
-      zoomControl: false,
-    });
+  const defaultCenter: [number, number] = [44.538, 18.675];
 
-    const geoapifyKey = 'ed861a6e59dc4d4689957789386559ae';
-    const primaryTileUrl = `https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=${geoapifyKey}`;
-    const fallbackTileUrl = '/tile/{z}/{x}/{y}.png';
-    const tileLayer = L.tileLayer(primaryTileUrl, {
-      attribution: '&copy; OpenStreetMap contributors & Geoapify',
-      maxZoom: 18,
-    });
-    tileLayer.on('tileerror', () => tileLayer.setUrl(fallbackTileUrl));
-    tileLayer.addTo(map);
-    mapInstanceRef.current = map;
+  const map = L.map(mapContainerRef.current, {
+    center: defaultCenter,
+    zoom: 15,
+    minZoom: 14,
+    maxZoom: 18,
+    zoomControl: false,
+  });
 
+  // Primary: GeoApify tiles (stylish, high‑resolution)
+  const geoapifyKey = 'ed861a6e59dc4d4689957789386559ae';
+  const primaryTileUrl = `https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=${geoapifyKey}`;
+  const fallbackTileUrl = `https://maps.geoapify.com/v1/staticmap?style=osm-bright-smooth&width=600&height=400&center=lonlat%3A-122.29009844646316%2C47.54607447032754&zoom=14.3497&marker=lonlat%3A-122.29188334609739%2C47.54403990655936%3Btype%3Aawesome%3Bcolor%3A%23bb3f73%3Bsize%3Ax-large%3Bicon%3Apaw%7Clonlat%3A-122.29282631194182%2C47.549609195001494%3Btype%3Amaterial%3Bcolor%3A%234c905a%3Bicon%3Atree%3Bicontype%3Aawesome%7Clonlat%3A-122.28726954893025%2C47.541766557545884%3Btype%3Amaterial%3Bcolor%3A%234c905a%3Bicon%3Atree%3Bicontype%3Aawesome&apiKey=ed861a6e59dc4d4689957789386559ae`;
+  const map = L.map("osm-bright").setView([48.1500327, 11.5753989], 14);
+  L.tileLayer('https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=YOUR_API_KEY', {
+    attribution: 'Powered by <a href="https://www.geoapify.com/" target="_blank">Geoapify</a> | <a href="https://openmaptiles.org/" target="_blank">© OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap</a> contributors',
+    maxZoom: 19, id: 'osm-bright'
+  }).addTo(map);
+
+  const tileLayer = L.tileLayer(primaryTileUrl, {
+    maxZoom: 18,
+  });
+  tileLayer.on('tileerror', () => tileLayer.setUrl(fallbackTileUrl));
+  tileLayer.addTo(map);
+  mapInstanceRef.current = map;
+  map.on('load', () => {
+    map.setPaintProperty('building', 'fill-color', '#bcb8b3');
+    map.setPaintProperty('building-top', 'fill-color', '#f3f4f9');
     // Clean up
     return () => {
       if (mapInstanceRef.current) {
@@ -102,33 +93,7 @@ export const MapView: React.FC<MapViewProps> = ({
     };
   }, []);
 
-  // Load optional building layer
-  useEffect(() => {
-    if (!mapInstanceRef.current) return;
-    if (!showBuildings) {
-      // Remove existing layer if disabled
-      if (buildingLayerRef.current) {
-        mapInstanceRef.current.removeLayer(buildingLayerRef.current);
-        buildingLayerRef.current = null;
-      }
-      return;
-    }
-    fetch('/TuzlaTourGuide.geojson')
-      .then(res => res.json())
-      .then(geojson => {
-        const layer = L.geoJSON(geojson, {
-          style: {
-            color: '#c0c0c0',
-            fillColor: '#e0e0e0',
-            weight: 1,
-            opacity: 0.8,
-            fillOpacity: 0.5,
-          },
-        }).addTo(mapInstanceRef.current);
-        buildingLayerRef.current = layer;
-      })
-      .catch(e => console.warn('Failed to load TuzlaTourGuide.geojson', e));
-  }, [showBuildings]);
+
 
   // Render Polygon Overlays for Zona 0, Zona 1 (Light Blue) and Zona 2 (Green)
   useEffect(() => {
@@ -267,30 +232,11 @@ export const MapView: React.FC<MapViewProps> = ({
           };
         }
         if (navBtn) {
-          navBtn.onclick = async (ev: Event) => {
+          navBtn.onclick = (ev: Event) => {
             ev.preventDefault();
             ev.stopPropagation();
-            // Get user location
-            if (navigator.geolocation) {
-              navigator.geolocation.getCurrentPosition(async (pos) => {
-                const userLat = pos.coords.latitude;
-                const userLng = pos.coords.longitude;
-                // Fly to user location and apply tilt
-                const map = mapInstanceRef.current;
-                if (map) {
-                  map.flyTo([userLat, userLng], 15, { duration: 1 });
-                  const container = map.getContainer();
-                  container.classList.add('map-tilt');
-                }
-                // Calculate route
-                const route = await calculateRoute({ lat: userLat, lng: userLng }, lot);
-                setNavRoute(route);
-              });
-            } else {
-              // Fallback without geolocation
-              const route = await calculateRoute({ lat: 0, lng: 0 }, lot);
-              setNavRoute(route);
-            }
+            // Call the prop function which sets activeRoute at the App level
+            onStartNavigation(lot);
           };
         }
       });
@@ -370,7 +316,7 @@ export const MapView: React.FC<MapViewProps> = ({
 
       if (validCoords.length > 0) {
         const polyline = L.polyline(validCoords, {
-          color: '#D4AF37',
+          color: '#3B82F6',
           weight: 6,
           opacity: 0.9,
           lineCap: 'round',
@@ -415,7 +361,7 @@ export const MapView: React.FC<MapViewProps> = ({
               ? 'bg-red-500 text-white border-red-400 shadow-sm font-extrabold'
               : 'bg-[#041530] border-red-500/40 text-red-400'}`}
           >
-            Z0 (Crvena)
+            Z0
           </button>
           <button
             onClick={() => onFilterZoneChange('1')}
@@ -423,7 +369,7 @@ export const MapView: React.FC<MapViewProps> = ({
               ? 'bg-sky-500 text-white border-sky-400 shadow-sm font-extrabold'
               : 'bg-[#041530] border-sky-500/40 text-sky-400'}`}
           >
-            Z1 (Plava)
+            Z1
           </button>
           <button
             onClick={() => onFilterZoneChange('2')}
@@ -431,12 +377,11 @@ export const MapView: React.FC<MapViewProps> = ({
               ? 'bg-emerald-500 text-white border-emerald-400 shadow-sm font-extrabold'
               : 'bg-[#041530] border-emerald-500/40 text-emerald-400'}`}
           >
-            Z2 (Zelena)
+            Z2
           </button>
         </div>
       </div>
-      {/* Toggle Building Layer */}
-      <button onClick={() => setShowBuildings(!showBuildings)} className="ml-2 px-1.5 py-0.5 rounded-full text-xs font-bold bg-gray-800 text-gray-200 hover:bg-gray-700 transition-colors" title={showBuildings ? 'Hide Buildings' : 'Show Buildings'}>{showBuildings ? '🏢' : '🏠'}</button>
+
 
       {/* Floating Action Buttons: Locate Me */}
       <div className="absolute bottom-6 right-3 z-20 flex flex-col gap-2">

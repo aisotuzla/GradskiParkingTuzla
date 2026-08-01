@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { X, Navigation, Compass, ArrowUp, ArrowLeft, ArrowRight, CheckCircle2, WifiOff, Clock, MessageSquare, Volume2, VolumeX } from 'lucide-react';
 import { Language, NavigationRoute, ParkingLotData } from '../types';
 import { TRANSLATIONS } from '../data/translations';
@@ -19,9 +19,13 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
 }) => {
   const t = TRANSLATIONS[currentLang];
   const [isMuted, setIsMuted] = useState(false);
+  const [dragPos, setDragPos] = useState({ x: 0, y: 0 });
+  const dragRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
+  const offset = useRef({ x: 0, y: 0 });
   const [hasSpokenInitial, setHasSpokenInitial] = useState(false);
 
-  // Speech synthesis helper for Bosnian / Croatian voice navigation
+  // Speech synthesis helper with male voice preference and no street names
   const speakInstruction = useCallback(
     (text: string) => {
       if (isMuted || !('speechSynthesis' in window)) return;
@@ -30,14 +34,19 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
       const utterance = new SpeechSynthesisUtterance(text);
 
       const voices = window.speechSynthesis.getVoices();
-      // Search for Bosnian (bs), Croatian (hr), or Serbian (sr) voice
-      const localVoice = voices.find(
-        (v) => v.lang.startsWith('bs') || v.lang.startsWith('hr') || v.lang.startsWith('sr')
+      // Prefer a male voice for the current language if available
+      const maleVoice = voices.find(
+        (v) => v.lang.startsWith(currentLang) && /male/i.test(v.name)
       );
-
-      if (localVoice) {
-        utterance.voice = localVoice;
-        utterance.lang = localVoice.lang;
+      const fallbackVoice = voices.find(
+        (v) => v.lang.startsWith(currentLang)
+      );
+      if (maleVoice) {
+        utterance.voice = maleVoice;
+        utterance.lang = maleVoice.lang;
+      } else if (fallbackVoice) {
+        utterance.voice = fallbackVoice;
+        utterance.lang = fallbackVoice.lang;
       } else {
         utterance.lang = currentLang === 'bs' ? 'bs-BA' : currentLang === 'de' ? 'de-DE' : 'en-US';
       }
@@ -90,12 +99,42 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
       setIsMuted(true);
     } else {
       setIsMuted(false);
-      speakInstruction(`Glasovna navigacija uključena.`);
+      speakInstruction(currentLang === 'bs' ? 'Glasovna navigacija uključena' : 'Voice navigation enabled');
     }
   };
 
+  // Drag handlers
+  const onMouseDown = (e: React.MouseEvent) => {
+    dragging.current = true;
+    const rect = dragRef.current?.getBoundingClientRect();
+    if (rect) {
+      offset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+    e.stopPropagation();
+  };
+  const onMouseMove = (e: MouseEvent) => {
+    if (!dragging.current) return;
+    setDragPos({ x: e.clientX - offset.current.x, y: e.clientY - offset.current.y });
+  };
+  const onMouseUp = () => {
+    dragging.current = false;
+  };
+  useEffect(() => {
+    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mouseup', onMouseUp);
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('mouseup', onMouseUp);
+    };
+  }, []);
+
   return (
-    <div className="fixed bottom-14 left-0 right-0 z-40 max-w-md mx-auto px-3 pb-2 pointer-events-auto animate-slide-up">
+    <div
+      ref={dragRef}
+      onMouseDown={onMouseDown}
+      style={{ left: dragPos.x, top: dragPos.y, position: 'fixed', cursor: dragging.current ? 'grabbing' : 'grab' }}
+      className="fixed left-0 right-0 max-w-md mx-auto px-3 pb-2 pointer-events-auto animate-slide-up"
+    >
       <div className="bg-[#1a2a44] border border-[#d4af37]/40 rounded-2xl p-4 shadow-2xl text-slate-100">
         {/* Header Row: Target Name, Voice Toggle & Close */}
         <div className="flex items-start justify-between gap-2 border-b border-slate-700/50 pb-2.5 mb-3">

@@ -1,4 +1,4 @@
-﻿import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Search, MapPin, Navigation, MessageSquare, Car, Zap, Shield, CheckCircle, Compass, Locate } from 'lucide-react';
 import { Language, ParkingLotData, ParkingZone, UserLocation } from '../types';
 import { ZONE_DETAILS } from '../data/parkingData';
@@ -115,7 +115,7 @@ export const ParkingList: React.FC<ParkingListProps> = ({
                 : 'bg-[#14213d] border-red-500/30 text-red-400'
             }`}
           >
-            Zona 0 (2.0 KM/h)
+            {t.zones.zone0}
           </button>
           <button
             onClick={() => setSelectedZone('1')}
@@ -125,7 +125,7 @@ export const ParkingList: React.FC<ParkingListProps> = ({
                 : 'bg-[#14213d] border-blue-500/30 text-blue-400'
             }`}
           >
-            Zona 1 (1.0 KM/h)
+            {t.zones.zone1}
           </button>
           <button
             onClick={() => setSelectedZone('2')}
@@ -135,7 +135,7 @@ export const ParkingList: React.FC<ParkingListProps> = ({
                 : 'bg-[#14213d] border-green-500/30 text-green-400'
             }`}
           >
-            Zona 2 (0.5 KM/h)
+            {t.zones.zone2}
           </button>
         </div>
       </div>
@@ -180,7 +180,7 @@ export const ParkingList: React.FC<ParkingListProps> = ({
                   <div className="flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className={`text-xs font-bold uppercase ${zoneTextColor}`}>
-                        Zona {lot.zone} &bull; {lot.area}
+                        {t.timer.zone} {lot.zone} &bull; {t.common.area}: {lot.area}
                       </span>
                       {lot.isGarage && (
                         <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-500/20 border border-purple-500/40 text-purple-300">
@@ -194,7 +194,7 @@ export const ParkingList: React.FC<ParkingListProps> = ({
                     <div className="text-sm font-black text-[#d4af37]">
                       {lot.hourlyPrice.toFixed(1)} <span className="text-[10px] font-normal text-slate-400">KM/h</span>
                     </div>
-                    <div className="text-[10px] text-slate-400">Dan: {lot.dailyPrice.toFixed(1)} KM</div>
+                    <div className="text-[10px] text-slate-400">{lot.dailyPrice.toFixed(1)} {t.zones.pricePerDay}</div>
                   </div>
                 </div>
 
@@ -232,21 +232,21 @@ export const ParkingList: React.FC<ParkingListProps> = ({
                     className="py-1.5 px-2 rounded-md bg-[#0a1128] hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
                   >
                     <MapPin className="w-3 h-3 text-[#d4af37]" />
-                    <span>Karta</span>
+                    <span>{t.tabs.map}</span>
                   </button>
                   <button
                     onClick={() => onStartNavigation(lot)}
                     className="py-1.5 px-2 rounded-md bg-[#14213d] hover:bg-[#1f2e52] border border-[#d4af37]/30 text-slate-100 text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
                   >
                     <Compass className="w-3 h-3 text-[#d4af37]" />
-                    <span>Ruta</span>
+                    <span>{t.navigation.navigate}</span>
                   </button>
                   <button
                     onClick={() => onPaySms(lot)}
                     className="py-1.5 px-2 rounded-md bg-[#d4af37] hover:bg-[#b8860b] text-[#0a1128] font-bold text-xs flex items-center justify-center gap-1 shadow-md active:scale-95 transition-all"
                   >
                     <MessageSquare className="w-3 h-3 fill-current" />
-                    <span>Plati SMS</span>
+                    <span>{t.tabs.pay}</span>
                   </button>
                 </div>
               </div>
