@@ -3,6 +3,7 @@ import L from 'leaflet';
 import { Locate, Navigation, MapPin, Layers, Compass, Zap, Shield, Info } from 'lucide-react';
 import { Language, NavigationRoute, ParkingLotData, ParkingZone, UserLocation } from '../types';
 import { ZONE_DETAILS, TUZLA_PARKING_ZONE_POLYGON, ZONA_1_POLYGONS, ZONA_2_POLYGONS } from '../data/parkingData';
+import * as maplibregl from 'maplibre-gl';
 import NavigationHUD from '../services/NavigationHUD';
 import { calculateRoute } from '../services/routingService';
 import { TRANSLATIONS } from '../data/translations';
@@ -34,6 +35,8 @@ export const MapView: React.FC<MapViewProps> = ({
   filterZone,
   onFilterZoneChange,
 }) => {
+
+  //Maplibre-GL
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<{ [id: string]: L.Marker }>({});
@@ -42,28 +45,33 @@ export const MapView: React.FC<MapViewProps> = ({
   const routePolylineRef = useRef<L.Polyline | null>(null);
 
   const t = TRANSLATIONS[currentLang];
+  const [showBuildings, setShowBuildings] = React.useState(false);
+  const buildingLayerRef = useRef<L.GeoJSON | null>(null);
 
+  const map = new maplibregl.Map({
+    container: 'my-map',
+    style: 'https://maps.geoapify.com/v1/styles/osm-bright/style.json?apiKey=YOUR_API_KEY',
+  });
+
+  map.on('load', () => {
+    map.setPaintProperty('park', 'fill-color', '#92ba69');
+    map.setPaintProperty('park-outline', 'line-color', 'rgba(83,177,20,0.66)');
+    map.setPaintProperty('landcover-wood', 'fill-color', '#69c43b');
+    map.setPaintProperty('landcover-grass', 'fill-color', '#addc7f');
+    map.setPaintProperty('landcover-grass-park', 'fill-color', '#cae2b2');
+    map.setPaintProperty('building', 'fill-color', '#93939c');
+    map.setPaintProperty('building-top', 'fill-color', '#becad3');
+    map.setPaintProperty('highway-secondary-tertiary-casing', 'line-color', '#f6a55f');
+    map.setPaintProperty('highway-path', 'line-color', '#b57e47');
+    map.setPaintProperty('highway-minor', 'line-color', '#ffffff');
+    map.setPaintProperty('highway-secondary-tertiary', 'line-color', '#f4ec4b');
+    map.setPaintProperty('highway-primary', 'line-color', '#f1d669');
+  });
   // Initialize Leaflet Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
     if (mapInstanceRef.current) return;
 
-    // Default Tuzla center [Lat, Lng]
-    // Load building GeoJSON for Tuzla center and style it (silver shades)
-    fetch('/TuzlaTourGuide.geojson')
-      .then((res) => res.json())
-      .then((geojson) => {
-        L.geoJSON(geojson, {
-          style: {
-            color: '#c0c0c0',
-            fillColor: '#e0e0e0',
-            weight: 1,
-            opacity: 0.8,
-            fillOpacity: 0.5,
-          },
-        }).addTo(mapInstanceRef.current);
-      })
-      .catch((e) => console.warn('Failed to load TuzlaTourGuide.geojson', e));
     const defaultCenter: [number, number] = [44.538, 18.675];
 
     const map = L.map(mapContainerRef.current, {
@@ -74,20 +82,14 @@ export const MapView: React.FC<MapViewProps> = ({
       zoomControl: false,
     });
 
-    // Geoapify tile layer with fallback to OSM
     const geoapifyKey = 'ed861a6e59dc4d4689957789386559ae';
     const primaryTileUrl = `https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=${geoapifyKey}`;
     const fallbackTileUrl = '/tile/{z}/{x}/{y}.png';
-
     const tileLayer = L.tileLayer(primaryTileUrl, {
       attribution: '&copy; OpenStreetMap contributors & Geoapify',
       maxZoom: 18,
     });
-
-    tileLayer.on('tileerror', () => {
-      tileLayer.setUrl(fallbackTileUrl);
-    });
-
+    tileLayer.on('tileerror', () => tileLayer.setUrl(fallbackTileUrl));
     tileLayer.addTo(map);
     mapInstanceRef.current = map;
 
@@ -99,6 +101,34 @@ export const MapView: React.FC<MapViewProps> = ({
       }
     };
   }, []);
+
+  // Load optional building layer
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+    if (!showBuildings) {
+      // Remove existing layer if disabled
+      if (buildingLayerRef.current) {
+        mapInstanceRef.current.removeLayer(buildingLayerRef.current);
+        buildingLayerRef.current = null;
+      }
+      return;
+    }
+    fetch('/TuzlaTourGuide.geojson')
+      .then(res => res.json())
+      .then(geojson => {
+        const layer = L.geoJSON(geojson, {
+          style: {
+            color: '#c0c0c0',
+            fillColor: '#e0e0e0',
+            weight: 1,
+            opacity: 0.8,
+            fillOpacity: 0.5,
+          },
+        }).addTo(mapInstanceRef.current);
+        buildingLayerRef.current = layer;
+      })
+      .catch(e => console.warn('Failed to load TuzlaTourGuide.geojson', e));
+  }, [showBuildings]);
 
   // Render Polygon Overlays for Zona 0, Zona 1 (Light Blue) and Zona 2 (Green)
   useEffect(() => {
@@ -167,7 +197,7 @@ export const MapView: React.FC<MapViewProps> = ({
       const details = ZONE_DETAILS[lot.zone];
       const isSelected = selectedLot?.id === lot.id;
 
-      // Custom div icon with Professional Polish styling (#0a1128, #1a2a44, #d4af37)
+      // Custom div icon with Professional Polish styling (#0a1128, #0c1880ff, #d4af37)
       const iconHtml = `
         <div class="relative group cursor-pointer transform transition-all duration-200 hover:scale-110 ${isSelected ? 'scale-125 z-50' : 'z-10'
         }">
@@ -373,42 +403,40 @@ export const MapView: React.FC<MapViewProps> = ({
         <div className="pointer-events-auto flex items-center gap-1 bg-[#061d40]/95 backdrop-blur-md p-1 rounded-full border border-[#d4af37]/40 shadow-xl">
           <button
             onClick={() => onFilterZoneChange('all')}
-            className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${filterZone === 'all'
+            className={`px-1.5 py-0.5 rounded-full text-xs font-bold transition-all ${filterZone === 'all'
               ? 'bg-[#d4af37] text-[#041530] shadow-sm font-extrabold'
-              : 'text-slate-300 hover:text-white'
-              }`}
+              : 'text-slate-300 hover:text-white'}`}
           >
             Sve
           </button>
           <button
             onClick={() => onFilterZoneChange('0')}
-            className={`px-2.5 py-1 rounded-full text-xs font-bold border transition-all ${filterZone === '0'
+            className={`px-1.5 py-0.5 rounded-full text-xs font-bold border transition-all ${filterZone === '0'
               ? 'bg-red-500 text-white border-red-400 shadow-sm font-extrabold'
-              : 'bg-[#041530] border-red-500/40 text-red-400'
-              }`}
+              : 'bg-[#041530] border-red-500/40 text-red-400'}`}
           >
             Z0 (Crvena)
           </button>
           <button
             onClick={() => onFilterZoneChange('1')}
-            className={`px-2.5 py-1 rounded-full text-xs font-bold border transition-all ${filterZone === '1'
+            className={`px-1.5 py-0.5 rounded-full text-xs font-bold border transition-all ${filterZone === '1'
               ? 'bg-sky-500 text-white border-sky-400 shadow-sm font-extrabold'
-              : 'bg-[#041530] border-sky-500/40 text-sky-400'
-              }`}
+              : 'bg-[#041530] border-sky-500/40 text-sky-400'}`}
           >
             Z1 (Plava)
           </button>
           <button
             onClick={() => onFilterZoneChange('2')}
-            className={`px-2.5 py-1 rounded-full text-xs font-bold border transition-all ${filterZone === '2'
+            className={`px-1.5 py-0.5 rounded-full text-xs font-bold border transition-all ${filterZone === '2'
               ? 'bg-emerald-500 text-white border-emerald-400 shadow-sm font-extrabold'
-              : 'bg-[#041530] border-emerald-500/40 text-emerald-400'
-              }`}
+              : 'bg-[#041530] border-emerald-500/40 text-emerald-400'}`}
           >
             Z2 (Zelena)
           </button>
         </div>
       </div>
+      {/* Toggle Building Layer */}
+      <button onClick={() => setShowBuildings(!showBuildings)} className="ml-2 px-1.5 py-0.5 rounded-full text-xs font-bold bg-gray-800 text-gray-200 hover:bg-gray-700 transition-colors" title={showBuildings ? 'Hide Buildings' : 'Show Buildings'}>{showBuildings ? '🏢' : '🏠'}</button>
 
       {/* Floating Action Buttons: Locate Me */}
       <div className="absolute bottom-6 right-3 z-20 flex flex-col gap-2">
