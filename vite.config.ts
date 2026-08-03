@@ -38,10 +38,11 @@ export default defineConfig(() => {
         output: {
           manualChunks: {
             react: ['react', 'react-dom'],
-            vendor: ['axios', 'lodash', 'maplibre-gl'],
+            vendor: ['maplibre-gl'],
           }
         }
       }
     }
   };
 });
+
