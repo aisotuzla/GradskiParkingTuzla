@@ -1,7 +1,7 @@
 import { NavigationRoute, ParkingLotData, RouteStep, UserLocation } from '../types';
 import { TUZLA_OFFLINE_ROAD_NODES } from '../data/parkingData';
 
-const GEOAPIFY_API_KEY = 'ed861a6e59dc4d4689957789386559ae';
+export const GEOAPIFY_API_KEY = '4b59ef066c8947618d81a98bc78622ab';
 
 // Haversine distance in meters
 export function calculateDistanceMeters(
@@ -78,7 +78,7 @@ export async function calculateRoute(
           const properties = feature.properties;
           const geometry = feature.geometry;
 
-          // Convert GeoJSON [lng, lat] coordinates to Leaflet [lat, lng]
+          // Convert GeoJSON [lng, lat] coordinates to MapLibre [lat, lng]
           const coords: [number, number][] = (geometry.coordinates[0] || [])
             .map((c: number[]) => [Number(c[1]), Number(c[0])] as [number, number])
             .filter((c: [number, number]) => typeof c[0] === 'number' && typeof c[1] === 'number' && !isNaN(c[0]) && !isNaN(c[1]));

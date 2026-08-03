@@ -1,14 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
-import L, { type CircleMarker, type Polyline, type LayerGroup, type Marker } from 'leaflet';
-import { Locate, Navigation, MapPin, Layers, Compass, Zap, Shield, Info } from 'lucide-react';
+import { GEOAPIFY_API_KEY } from '../services/routingService';
+import { Locate } from 'lucide-react';
 import { Language, NavigationRoute, ParkingLotData, ParkingZone, UserLocation } from '../types';
-import { ZONE_DETAILS, TUZLA_PARKING_ZONE_POLYGON, ZONA_1_POLYGONS, ZONA_2_POLYGONS } from '../data/parkingData';
+import { ZONE_DETAILS, TUZLA_PARKING_ZONE_POLYGON } from '../data/parkingData';
 import * as maplibregl from 'maplibre-gl';
-import NavigationHUD from '../services/NavigationHUD';
-import { calculateRoute } from '../services/routingService';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { TRANSLATIONS } from '../data/translations';
-
-
+import { OfflineMapController } from './OfflineMapController';
 
 interface MapViewProps {
   parkingLots: ParkingLotData[];
@@ -37,116 +35,189 @@ export const MapView: React.FC<MapViewProps> = ({
   filterZone,
   onFilterZoneChange,
 }) => {
-
-  //Maplibre-GL
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersRef = useRef<{ [id: string]: Marker }>({});
-  const polygonGroupRef = useRef<LayerGroup | null>(null);
-  const userMarkerRef = useRef<CircleMarker | null>(null);
-  const routePolylineRef = useRef<Polyline | null>(null);
-
+  const mapInstanceRef = useRef<maplibregl.Map | null>(null);
+  const [mapInstance, setMapInstance] = useState<maplibregl.Map | null>(null);
+  const [is3D, setIs3D] = useState(false);
+  const markersRef = useRef<{ [id: string]: maplibregl.Marker }>({});
+  const userMarkerRef = useRef<maplibregl.Marker | null>(null);
   const t = TRANSLATIONS[currentLang];
 
-  // Initialize Leaflet Map
+  const defaultCenter: [number, number] = [18.675, 44.538];
+
   useEffect(() => {
-    if (!mapContainerRef.current) return;
-    if (mapInstanceRef.current) return;
+    if (!mapContainerRef.current || mapInstanceRef.current) return;
 
-  });
+    // Primary style: osm-liberty JSON from Geoapify
+    const primaryStyleUrl = `https://maps.geoapify.com/v1/styles/osm-liberty/style.json?apiKey=${GEOAPIFY_API_KEY}`;
+    // Fallback raster style using osm-bright tiles
+    const fallbackStyle: maplibregl.StyleSpecification = {
+      version: 8,
+      sources: {
+        'osm-bright': {
+          type: 'raster',
+          tiles: [`https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=${GEOAPIFY_API_KEY}`],
+          tileSize: 256,
+          minzoom: 0,
+          maxzoom: 20
+        }
+      },
+      layers: [
+        {
+          id: 'osm-bright-layer',
+          type: 'raster',
+          source: 'osm-bright',
+          minzoom: 0,
+          maxzoom: 20
+        }
+      ]
+    };
 
-  const defaultCenter: [number, number] = [44.538, 18.675];
+    const map = new maplibregl.Map({
+      container: mapContainerRef.current,
+      style: primaryStyleUrl,
+      center: defaultCenter,
+      zoom: 15,
+      minZoom: 10,
+      maxZoom: 19,
+      pitchWithRotate: true,
+      dragRotate: true,
+    });
 
-  const map = L.map(mapContainerRef.current, {
-    center: defaultCenter,
-    zoom: 15,
-    minZoom: 14,
-    maxZoom: 18,
-    zoomControl: false,
-  });
+    mapInstanceRef.current = map;
+    setMapInstance(map);
 
-  // Primary: GeoApify tiles (stylish, high‑resolution)
-  const geoapifyKey = 'ed861a6e59dc4d4689957789386559ae';
-  const primaryTileUrl = `https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=${geoapifyKey}`;
-  const fallbackTileUrl = `https://maps.geoapify.com/v1/staticmap?style=osm-bright-smooth&width=600&height=400&center=lonlat%3A-122.29009844646316%2C47.54607447032754&zoom=14.3497&marker=lonlat%3A-122.29188334609739%2C47.54403990655936%3Btype%3Aawesome%3Bcolor%3A%23bb3f73%3Bsize%3Ax-large%3Bicon%3Apaw%7Clonlat%3A-122.29282631194182%2C47.549609195001494%3Btype%3Amaterial%3Bcolor%3A%234c905a%3Bicon%3Atree%3Bicontype%3Aawesome%7Clonlat%3A-122.28726954893025%2C47.541766557545884%3Btype%3Amaterial%3Bcolor%3A%234c905a%3Bicon%3Atree%3Bicontype%3Aawesome&apiKey=ed861a6e59dc4d4689957789386559ae`;
-  const map = L.map("osm-bright").setView([48.1500327, 11.5753989], 14);
-  L.tileLayer('https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=YOUR_API_KEY', {
-    attribution: 'Powered by <a href="https://www.geoapify.com/" target="_blank">Geoapify</a> | <a href="https://openmaptiles.org/" target="_blank">© OpenMapTiles</a> <a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap</a> contributors',
-    maxZoom: 19, id: 'osm-bright'
-  }).addTo(map);
+    // Right-click toggles 3D perspective view
+    map.getCanvas().addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      setIs3D(prev => !prev);
+    });
 
-  const tileLayer = L.tileLayer(primaryTileUrl, {
-    maxZoom: 18,
-  });
-  tileLayer.on('tileerror', () => tileLayer.setUrl(fallbackTileUrl));
-  tileLayer.addTo(map);
-  mapInstanceRef.current = map;
-  map.on('load', () => {
-    map.setPaintProperty('building', 'fill-color', '#bcb8b3');
-    map.setPaintProperty('building-top', 'fill-color', '#f3f4f9');
-    // Clean up
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
+    // If the primary Geoapify style fails (e.g., network issues), fall back to raster tiles
+    map.on('error', (e) => {
+      if (e.error && e.error.message && e.error.message.toLowerCase().includes('style')) {
+        console.warn('Primary style failed to load. Switching to fallback raster tiles.');
+        map.setStyle(fallbackStyle);
       }
+    });
+
+    map.on('load', () => {
+      map.addSource('buildings', {
+        type: 'geojson',
+        data: '/buildings.geojson'
+      });
+
+      map.addLayer({
+        id: 'buildings-layer',
+        type: 'fill',
+        source: 'buildings',
+        paint: {
+          'fill-color': '#bcb8b3',
+          'fill-opacity': 0.8
+        }
+      });
+
+      map.addSource('route', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: []
+          }
+        }
+      });
+
+      map.addLayer({
+        id: 'route-layer',
+        type: 'line',
+        source: 'route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#3B82F6',
+          'line-width': 6,
+          'line-opacity': 0.9
+        }
+      });
+
+      map.addSource('zone-polygons', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: []
+        }
+      });
+
+      map.addLayer({
+        id: 'zone-polygons-fill',
+        type: 'fill',
+        source: 'zone-polygons',
+        paint: {
+          'fill-color': ['get', 'color'],
+          'fill-opacity': ['get', 'opacity']
+        }
+      });
+
+      map.addLayer({
+        id: 'zone-polygons-line',
+        type: 'line',
+        source: 'zone-polygons',
+        paint: {
+          'line-color': ['get', 'color'],
+          'line-width': 2,
+          'line-dasharray': [4, 4]
+        }
+      });
+    });
+
+    return () => {
+      map.remove();
+      mapInstanceRef.current = null;
     };
   }, []);
 
-
-
-  // Render Polygon Overlays for Zona 0, Zona 1 (Light Blue) and Zona 2 (Green)
   useEffect(() => {
     const map = mapInstanceRef.current;
-    if (!map) return;
-
-    if (polygonGroupRef.current) {
-      polygonGroupRef.current.clearLayers();
-      map.removeLayer(polygonGroupRef.current);
-      polygonGroupRef.current = null;
-    }
-
-    const group = L.layerGroup();
+    if (!map || !map.isStyleLoaded()) return;
 
     try {
-      // 1. Zona 0 / Special Zone Polygon (Red accent)
+      const features: any[] = [];
       if (filterZone === 'all' || filterZone === '0') {
-        const rawPolyCoords0 = TUZLA_PARKING_ZONE_POLYGON.polygons[0];
-        const leafletCoords0: [number, number][] = rawPolyCoords0
-          .filter((pt) => Array.isArray(pt) && typeof pt[0] === 'number' && typeof pt[1] === 'number' && !isNaN(pt[0]) && !isNaN(pt[1]))
-          .map((pt) => [pt[1], pt[0]]);
-        if (leafletCoords0.length > 2) {
-          const poly0 = L.polygon(leafletCoords0, {
+        const coords = TUZLA_PARKING_ZONE_POLYGON.polygons[0].map(pt => [pt[1], pt[0]]);
+        features.push({
+          type: 'Feature',
+          properties: {
             color: TUZLA_PARKING_ZONE_POLYGON.color,
-            fillColor: TUZLA_PARKING_ZONE_POLYGON.color,
-            fillOpacity: filterZone === '0' ? 0.45 : 0.25,
-            weight: 2,
-            dashArray: '4, 4',
-          });
-          poly0.bindTooltip('Zona 0 • Centar / Pannonica', {
-            direction: 'center',
-            className: 'custom-polygon-tooltip',
-          });
-          group.addLayer(poly0);
-        }
+            opacity: filterZone === '0' ? 0.45 : 0.25
+          },
+          geometry: {
+            type: 'Polygon',
+            coordinates: [coords]
+          }
+        });
       }
 
-
-
-      group.addTo(map);
-      polygonGroupRef.current = group;
+      const source = map.getSource('zone-polygons') as maplibregl.GeoJSONSource;
+      if (source) {
+        source.setData({
+          type: 'FeatureCollection',
+          features
+        });
+      }
     } catch (e) {
       console.warn('Error drawing parking zone polygons', e);
     }
   }, [filterZone]);
 
-  // Update Markers when parkingLots or filterZone changes
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
 
-    // Clear existing markers
-    Object.values(markersRef.current).forEach((m: L.Marker) => m.remove());
+    Object.values(markersRef.current).forEach((m) => (m as maplibregl.Marker).remove());
     markersRef.current = {};
 
     const filteredLots = parkingLots.filter(
@@ -154,41 +225,29 @@ export const MapView: React.FC<MapViewProps> = ({
     );
 
     filteredLots.forEach((lot) => {
-      // lot.coordinates is [lat, lng]
       const lat = Number(lot.coordinates?.[0]);
       const lng = Number(lot.coordinates?.[1]);
-      if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) return;
+      if (isNaN(lat) || isNaN(lng)) return;
 
       const details = ZONE_DETAILS[lot.zone];
       const isSelected = selectedLot?.id === lot.id;
 
-      // Custom div icon with Professional Polish styling (#0a1128, #0c1880ff, #d4af37)
-      const iconHtml = `
-        <div class="relative group cursor-pointer transform transition-all duration-200 hover:scale-110 ${isSelected ? 'scale-125 z-50' : 'z-10'
-        }">
-          <div class="w-8 h-8 rounded-lg bg-[#1a2a44] border-2 flex items-center justify-center shadow-lg"
-               style="border-color: ${details.color}">
+      const el = document.createElement('div');
+      el.className = 'custom-map-pin';
+      el.innerHTML = `
+        <div class="relative group cursor-pointer transform transition-all duration-200 hover:scale-110 ${isSelected ? 'scale-125 z-50' : 'z-10'}">
+          <div class="w-8 h-8 rounded-lg bg-[#1a2a44] border-2 flex items-center justify-center shadow-lg" style="border-color: ${details.color}">
             <span class="text-[11px] font-black text-[#d4af37]">Z${lot.zone}</span>
           </div>
-          ${isSelected
-          ? `<div class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#d4af37] border-2 border-[#0a1128] animate-ping"></div>`
-          : ''
-        }
-          <div class="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[7px] mx-auto -mt-0.5"
-               style="border-t-color: ${details.color}"></div>
+          ${isSelected ? `<div class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#d4af37] border-2 border-[#0a1128] animate-ping"></div>` : ''}
+          <div class="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[7px] mx-auto -mt-0.5" style="border-t-color: ${details.color}"></div>
         </div>
       `;
 
-      const customIcon = L.divIcon({
-        html: iconHtml,
-        className: 'custom-map-pin',
-        iconSize: [32, 40],
-        iconAnchor: [16, 40],
-      });
+      const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+        .setLngLat([lng, lat])
+        .addTo(map);
 
-      const marker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
-
-      // Popup Content
       const popupHtml = `
         <div class="p-3 bg-[#1a2a44] text-slate-100 font-sans min-w-[220px] max-w-[260px]">
           <div class="flex items-center justify-between mb-1">
@@ -210,65 +269,59 @@ export const MapView: React.FC<MapViewProps> = ({
         </div>
       `;
 
-      marker.bindPopup(popupHtml, {
-        className: 'custom-leaflet-popup',
-        closeButton: true,
-      });
+      const popup = new maplibregl.Popup({ offset: 25, closeButton: true })
+        .setHTML(popupHtml);
 
-      marker.on('click', () => {
-        onSelectLot(lot);
-      });
-
-      marker.on('popupopen', (e: any) => {
-        const popupEl = e.popup?.getElement();
-        const smsBtn = popupEl?.querySelector(`#pop-sms-${lot.id}`) || document.getElementById(`pop-sms-${lot.id}`);
-        const navBtn = popupEl?.querySelector(`#pop-nav-${lot.id}`) || document.getElementById(`pop-nav-${lot.id}`);
+      popup.on('open', () => {
+        const smsBtn = document.getElementById(`pop-sms-${lot.id}`);
+        const navBtn = document.getElementById(`pop-nav-${lot.id}`);
 
         if (smsBtn) {
-          smsBtn.onclick = (ev: Event) => {
+          smsBtn.onclick = (ev) => {
             ev.preventDefault();
             ev.stopPropagation();
             onPaySms(lot);
           };
         }
         if (navBtn) {
-          navBtn.onclick = (ev: Event) => {
+          navBtn.onclick = (ev) => {
             ev.preventDefault();
             ev.stopPropagation();
-            // Call the prop function which sets activeRoute at the App level
             onStartNavigation(lot);
           };
         }
+      });
+
+      marker.setPopup(popup);
+
+      el.addEventListener('click', () => {
+        onSelectLot(lot);
       });
 
       markersRef.current[lot.id] = marker;
     });
   }, [parkingLots, filterZone, selectedLot]);
 
-  // Navigation route state and HUD
-  const [navRoute, setNavRoute] = useState<NavigationRoute | null>(null);
-  const handleCloseHUD = () => setNavRoute(null);
-
-  // Center or FlyTo Selected Lot
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map || !selectedLot) return;
 
     const lat = Number(selectedLot.coordinates?.[0]);
     const lng = Number(selectedLot.coordinates?.[1]);
-    if (typeof lat !== 'number' || typeof lng !== 'number' || isNaN(lat) || isNaN(lng)) return;
+    if (isNaN(lat) || isNaN(lng)) return;
 
-    map.flyTo([lat, lng], 17, {
-      duration: 1.2,
+    map.flyTo({
+      center: [lng, lat],
+      zoom: 17,
+      speed: 1.2
     });
 
     const marker = markersRef.current[selectedLot.id];
     if (marker) {
-      marker.openPopup();
+      marker.togglePopup();
     }
   }, [selectedLot]);
 
-  // Render User Location
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -278,73 +331,79 @@ export const MapView: React.FC<MapViewProps> = ({
       userMarkerRef.current = null;
     }
 
-    if (
-      userLocation &&
-      typeof userLocation.lat === 'number' &&
-      typeof userLocation.lng === 'number' &&
-      !isNaN(userLocation.lat) &&
-      !isNaN(userLocation.lng)
-    ) {
-      const userMarker = L.circleMarker([userLocation.lat, userLocation.lng], {
-        radius: 8,
-        fillColor: '#3B82F6',
-        color: '#FFFFFF',
-        weight: 3,
-        opacity: 1,
-        fillOpacity: 0.9,
-      }).addTo(map);
+    if (userLocation && !isNaN(userLocation.lat) && !isNaN(userLocation.lng)) {
+      const el = document.createElement('div');
+      el.className = 'w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-md';
 
-      userMarker.bindTooltip('Vaša Lokacija', { permanent: false, direction: 'top' });
+      const userMarker = new maplibregl.Marker({ element: el })
+        .setLngLat([userLocation.lng, userLocation.lat])
+        .addTo(map);
+
       userMarkerRef.current = userMarker;
     }
   }, [userLocation]);
 
-  // Render Route Polyline
+  // Toggle 3D perspective when is3D changes
+  useEffect(() => {
+    const map = mapInstanceRef.current;
+    if (!map) return;
+    map.easeTo({
+      pitch: is3D ? 60 : 0,
+      bearing: is3D ? -30 : 0,
+      duration: 800
+    });
+  }, [is3D]);
+
+  // Update route line - waits for source to be available
   useEffect(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
 
-    if (routePolylineRef.current) {
-      routePolylineRef.current.remove();
-      routePolylineRef.current = null;
-    }
+    const updateRoute = () => {
+      const source = map.getSource('route') as maplibregl.GeoJSONSource;
+      if (!source) return;
 
-    if (activeRoute && Array.isArray(activeRoute.coordinates) && activeRoute.coordinates.length > 0) {
-      const validCoords = activeRoute.coordinates.filter(
-        (c) => Array.isArray(c) && c.length >= 2 && typeof c[0] === 'number' && typeof c[1] === 'number' && !isNaN(c[0]) && !isNaN(c[1])
-      );
+      if (activeRoute && Array.isArray(activeRoute.coordinates) && activeRoute.coordinates.length > 0) {
+        const validCoords = activeRoute.coordinates
+          .filter(c => Array.isArray(c) && c.length >= 2 && !isNaN(c[0]) && !isNaN(c[1]))
+          .map(c => [c[1], c[0]] as [number, number]);
 
-      if (validCoords.length > 0) {
-        const polyline = L.polyline(validCoords, {
-          color: '#3B82F6',
-          weight: 6,
-          opacity: 0.9,
-          lineCap: 'round',
-          lineJoin: 'round',
-        }).addTo(map);
-
-        try {
-          const bounds = polyline.getBounds();
-          if (bounds && bounds.isValid()) {
-            map.fitBounds(bounds, { padding: [50, 50] });
-          } else if (validCoords[0]) {
-            map.panTo(validCoords[0]);
-          }
-        } catch (e) {
-          console.warn('fitBounds error ignored', e);
+        if (validCoords.length > 0) {
+          source.setData({
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'LineString',
+              coordinates: validCoords
+            }
+          });
+          const bounds = new maplibregl.LngLatBounds(validCoords[0], validCoords[0]);
+          validCoords.forEach(coord => bounds.extend(coord));
+          map.fitBounds(bounds, { padding: 50 });
         }
-
-        routePolylineRef.current = polyline;
+      } else {
+        source.setData({
+          type: 'Feature',
+          properties: {},
+          geometry: { type: 'LineString', coordinates: [] }
+        });
       }
+    };
+
+    // If the source exists already, update immediately
+    if (map.getSource('route')) {
+      updateRoute();
+    } else {
+      // Source not yet added (style still loading) - wait for it
+      map.once('load', updateRoute);
     }
   }, [activeRoute]);
 
   return (
-    <div className="relative w-full h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] overflow-hidden bg-slate-950">
-      {/* Map Element */}
+    <div className="relative w-full h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] overflow-hidden bg-slate-950" onContextMenu={(e) => e.preventDefault()}>
       <div ref={mapContainerRef} className="w-full h-full z-0" />
+      <OfflineMapController map={mapInstance} />
 
-      {/* Floating Zone Filters Bar */}
       <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
         <div className="pointer-events-auto flex items-center gap-1 bg-[#061d40]/95 backdrop-blur-md p-1 rounded-full border border-[#d4af37]/40 shadow-xl">
           <button
@@ -382,8 +441,6 @@ export const MapView: React.FC<MapViewProps> = ({
         </div>
       </div>
 
-
-      {/* Floating Action Buttons: Locate Me */}
       <div className="absolute bottom-6 right-3 z-20 flex flex-col gap-2">
         <button
           onClick={onRequestUserLocation}
@@ -394,7 +451,6 @@ export const MapView: React.FC<MapViewProps> = ({
         </button>
       </div>
 
-      {/* Polygon Legend Banner */}
       <div className="absolute bottom-6 left-3 z-20 pointer-events-auto">
         <div className="bg-[#061d40]/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#d4af37]/30 text-[11px] text-slate-200 flex items-center gap-2 shadow-lg">
           <span className="w-3 h-3 rounded-full bg-red-500/80 border border-white inline-block"></span>

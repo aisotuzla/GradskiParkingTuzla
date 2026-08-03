@@ -14,9 +14,13 @@
     }
   ],
   "start_url": "/",
-  "background_color": "#0B192C",
+  "background_color": "#06127c",
   "theme_color": "#0B192C",
   "display": "standalone",
   "orientation": "portrait",
-  "categories": ["navigation", "transportation", "utilities"]
+  "categories": [
+    "navigation",
+    "transportation",
+    "utilities"
+  ]
 }

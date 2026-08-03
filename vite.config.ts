@@ -15,11 +15,14 @@ export default defineConfig(() => {
         filename: 'sw.js',
         registerType: 'autoUpdate',
         injectManifest: {
-          globPatterns: ['**/*.{js,css,html,ico,png,svg,json}', 'tile/**/*.{png,jpg,jpeg}'],
+          globPatterns: ['**/*.{js,css,html,ico,png,webp,svg,json}', 'tile/**/*.{png,webp,jpg,jpeg}'],
           maximumFileSizeToCacheInBytes: 50 * 1024 * 1024,
         }
       })
     ],
+    optimizeDeps: {
+      exclude: ['maplibre-gl']
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

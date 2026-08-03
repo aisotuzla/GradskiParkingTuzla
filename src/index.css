@@ -21,8 +21,8 @@
   }
 }
 
-/* Custom Leaflet Dark Popup styling */
-.leaflet-popup-content-wrapper {
+/* Custom MapLibre Dark Popup styling */
+.maplibregl-popup-content {
   background: #06127c !important;
   color: #f8fafc !important;
   border: 1px solid rgba(212, 175, 55, 0.4) !important;
@@ -30,24 +30,21 @@
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.7) !important;
   padding: 0 !important;
   overflow: hidden !important;
-}
-
-.leaflet-popup-tip {
-  background: #08224d !important;
-  border: 1px solid rgba(192, 157, 43, 0.4) !important;
-}
-
-.leaflet-popup-content {
   margin: 0 !important;
   line-height: 1.4 !important;
 }
 
-.leaflet-container {
+.maplibregl-popup-tip {
+  border-top-color: #08224d !important;
+  border-bottom-color: #08224d !important;
+}
+
+.maplibregl-map {
   font-family: inherit !important;
   background-color: #040675 !important;
 }
 
-/* Polygon Tooltip */
+/* Polygon Tooltip (if needed later) */
 .custom-polygon-tooltip {
   background-color: #08224d !important;
   color: #d4af37 !important;
