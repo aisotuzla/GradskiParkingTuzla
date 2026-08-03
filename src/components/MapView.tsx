@@ -56,7 +56,7 @@ export const MapView: React.FC<MapViewProps> = ({
       sources: {
         'osm-bright': {
           type: 'raster',
-          tiles: [`https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.png?apiKey=${GEOAPIFY_API_KEY}`],
+          tiles: [`https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.webp?apiKey=${GEOAPIFY_API_KEY}`],
           tileSize: 256,
           minzoom: 0,
           maxzoom: 20

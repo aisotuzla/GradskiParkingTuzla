@@ -24,7 +24,7 @@ function isTileRequest(url) {
     url.includes('stadiamaps') ||
     url.includes('mapbox') ||
     url.includes('/tiles/') ||
-    url.match(/\/\d+\/\d+\/\d+(\.png|\.jpg|\.webp)?/)
+    url.match(/\/\d+\/\d+\/\d+(\.webp|\.jpg|\.webp)?/)
   );
 }
 
@@ -141,7 +141,7 @@ self.addEventListener('fetch', (event) => {
               });
             }
           })
-          .catch(() => {/* ignore background refresh errors */});
+          .catch(() => {/* ignore background refresh errors */ });
         return cachedResponse;
       }
 

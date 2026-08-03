@@ -34,7 +34,7 @@ export const OfflineMapController: React.FC<OfflineMapControllerProps> = ({ map 
         if (!map.getSource(sourceId)) {
           map.addSource(sourceId, {
             type: 'raster',
-            tiles: ['/tile/{z}/{x}/{y}.png'],
+            tiles: ['/tile/{z}/{x}/{y}.webp'],
             tileSize: 256,
             minzoom: 14,
             maxzoom: 19
@@ -64,7 +64,7 @@ export const OfflineMapController: React.FC<OfflineMapControllerProps> = ({ map 
     } else {
       map.on('style.load', manageOfflineLayer);
     }
-    
+
     // Also re-apply when style loads, in case map style changes
     map.on('load', manageOfflineLayer);
 

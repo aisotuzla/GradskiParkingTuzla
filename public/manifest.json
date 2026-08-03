@@ -3,13 +3,13 @@
   "name": "Tuzla Parking - Smart Parking & Navigation",
   "icons": [
     {
-      "src": "/pwa-icon-192.png",
-      "type": "image/png",
+      "src": "/pwa-icon-192.webp",
+      "type": "image/.webpbp",
       "sizes": "192x192"
     },
     {
-      "src": "/pwa-icon-512.png",
-      "type": "image/png",
+      "src": "/pwa-icon-512.webp",
+      "type": "image/.webp",
       "sizes": "512x512"
     }
   ],
