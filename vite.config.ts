@@ -16,7 +16,7 @@ export default defineConfig(() => {
         registerType: 'autoUpdate',
         injectManifest: {
           globPatterns: ['**/*.{js,css,html,ico,png,webp,svg,json}', 'tile/**/*.{png,webp,jpg,jpeg}'],
-          maximumFileSizeToCacheInBytes: 50 * 1024 * 1024,
+          maximumFileSizeToCacheInBytes: 50 * 1024 * 1024, // 50 MB cache limit
         }
       })
     ],
@@ -29,11 +29,19 @@ export default defineConfig(() => {
       },
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
       hmr: process.env.DISABLE_HMR !== 'true',
-      // Disable file watching when DISABLE_HMR is true to save CPU during agent edits.
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
+    build: {
+      chunkSizeWarningLimit: 2000, // 2 MB limit
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            react: ['react', 'react-dom'],
+            vendor: ['axios', 'lodash', 'maplibre-gl'],
+          }
+        }
+      }
+    }
   };
 });
