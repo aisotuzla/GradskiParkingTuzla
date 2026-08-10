@@ -3,6 +3,7 @@ import { ZONE_DETAILS, getSmsNumber } from '../data/parkingData';
 
 const LOCAL_STORAGE_ACTIVE_SESSION_KEY = 'tuzla_active_parking_v1';
 const LOCAL_STORAGE_PLATES_KEY = 'tuzla_saved_plates_v1';
+const LOCAL_STORAGE_HISTORY_KEY = 'tuzla_payment_history_v1';
 
 export function sanitizePlate(plate: string): string {
   // Removes spaces and hyphens for SMS transmission while keeping alphanumeric uppercase
@@ -96,7 +97,149 @@ export function createPaymentSession(
 
   savePlate(rawPlate);
   saveActiveSession(session);
+  addPaymentToHistory(session);
   return session;
+}
+
+export function getPaymentHistory(): ParkingPaymentSession[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_HISTORY_KEY);
+    if (raw) {
+      const list = JSON.parse(raw);
+      if (Array.isArray(list) && list.length > 0) return list;
+    }
+  } catch (e) {
+    console.warn('Error reading payment history', e);
+  }
+
+  // Seed default history items for initial view stats
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+  const initialHistory: ParkingPaymentSession[] = [
+    {
+      id: `hist_1`,
+      parkingName: 'Parking Korzo (Trg Slobode)',
+      zone: '0',
+      licensePlate: 'E12M345',
+      hours: 2,
+      isDayTicket: false,
+      totalPrice: 2.0,
+      startTime: now - 3 * 60 * 60 * 1000,
+      endTime: now - 1 * 60 * 60 * 1000,
+      smsNumber: '0837501',
+      smsBody: 'E12M345',
+      active: false,
+    },
+    {
+      id: `hist_2`,
+      parkingName: 'Parking Soni Trg',
+      zone: '0',
+      licensePlate: 'E12M345',
+      hours: 1,
+      isDayTicket: false,
+      totalPrice: 1.0,
+      startTime: now - dayMs * 1 - 2 * 60 * 60 * 1000,
+      endTime: now - dayMs * 1 - 1 * 60 * 60 * 1000,
+      smsNumber: '0837501',
+      smsBody: 'E12M345',
+      active: false,
+    },
+    {
+      id: `hist_3`,
+      parkingName: 'Parking Dom Zdravlja',
+      zone: '1',
+      licensePlate: 'A12K890',
+      hours: 2,
+      isDayTicket: false,
+      totalPrice: 1.0,
+      startTime: now - dayMs * 3 - 4 * 60 * 60 * 1000,
+      endTime: now - dayMs * 3 - 2 * 60 * 60 * 1000,
+      smsNumber: '0837502',
+      smsBody: 'A12K890',
+      active: false,
+    },
+    {
+      id: `hist_4`,
+      parkingName: 'Parking Panonska Jezera',
+      zone: '1',
+      licensePlate: 'E12M345',
+      hours: 24,
+      isDayTicket: true,
+      totalPrice: 4.0,
+      startTime: now - dayMs * 7 - 6 * 60 * 60 * 1000,
+      endTime: now - dayMs * 6 - 6 * 60 * 60 * 1000,
+      smsNumber: '0837502',
+      smsBody: 'E12M345',
+      active: false,
+    },
+  ];
+
+  try {
+    localStorage.setItem(LOCAL_STORAGE_HISTORY_KEY, JSON.stringify(initialHistory));
+  } catch (e) {
+    console.warn('Failed seeding payment history', e);
+  }
+  return initialHistory;
+}
+
+export function addPaymentToHistory(session: ParkingPaymentSession): void {
+  try {
+    const current = getPaymentHistory();
+    // Avoid duplicate IDs
+    const filtered = current.filter((item) => item.id !== session.id);
+    const updated = [session, ...filtered];
+    localStorage.setItem(LOCAL_STORAGE_HISTORY_KEY, JSON.stringify(updated));
+  } catch (e) {
+    console.warn('Failed to add payment to history', e);
+  }
+}
+
+export function clearPaymentHistory(): void {
+  try {
+    localStorage.removeItem(LOCAL_STORAGE_HISTORY_KEY);
+  } catch (e) {
+    console.warn('Failed to clear payment history', e);
+  }
+}
+
+export function getPaymentStats(history: ParkingPaymentSession[]) {
+  const now = new Date();
+  const currentDay = now.getDate();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
+
+  let dayTotal = 0;
+  let monthTotal = 0;
+  let totalSpent = 0;
+
+  history.forEach((session) => {
+    const sessionDate = new Date(session.startTime);
+    const price = typeof session.totalPrice === 'number' ? session.totalPrice : 0;
+
+    totalSpent += price;
+
+    if (
+      sessionDate.getDate() === currentDay &&
+      sessionDate.getMonth() === currentMonth &&
+      sessionDate.getFullYear() === currentYear
+    ) {
+      dayTotal += price;
+    }
+
+    if (
+      sessionDate.getMonth() === currentMonth &&
+      sessionDate.getFullYear() === currentYear
+    ) {
+      monthTotal += price;
+    }
+  });
+
+  return {
+    dayTotal,
+    monthTotal,
+    totalSpent,
+    totalCount: history.length,
+  };
 }
 
 export function saveActiveSession(session: ParkingPaymentSession | null): void {

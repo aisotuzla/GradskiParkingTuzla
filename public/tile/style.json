@@ -1,0 +1,22 @@
+﻿{
+    "tilejson": "1.0.0",
+    "name": "Tuzla Bright Map",
+    "description": "Offline map for Tuzla, Bosnia and Herzegovina",
+    "attribution": "© OpenStreetMap contributors",
+    "tiles": [
+        "/tile/{z}/{x}/{y}.webp"
+    ],
+    "minzoom": 14,
+    "maxzoom": 19,
+    "bounds": [
+        18.641298698973824,
+        44.524421222188643,
+        18.714732252107076,
+        44.545400280789757
+    ],
+    "center": [
+        18.678015475540448,
+        44.5349107514892,
+        19
+    ]
+}

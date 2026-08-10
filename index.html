@@ -3,68 +3,21 @@
 
 <head>
   <meta charset="UTF-8">
-
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-
-  <title>Tuzla Parking – Pametni Parking - Navigacija</title>
-
-  <meta name="description" content="PWA aplikacija za jednostavno SMS plaćanje parkinga i GPS navigaciju u Tuzli.">
-
-  <meta name="theme-color" content="#050d80">
-
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Tuzla Parking - SMS Parking - Navigacija</title>
+  <meta name="theme-color" content="#08182e">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="blue-translucent">
-
-  <meta name="mobile-web-app-capable" content="yes">
-
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="PWA Aplikacija za SMS plaćanje parkinga i navigaciju u Tuzli">
   <link rel="manifest" href="/manifest.json">
-
-  <link rel="icon" href="src/pwa-icon-512.webp">
-
-  <link rel="apple-touch-icon" href="src/pwa-icon-192.webp">
-
-  <link rel="preconnect" href="https://api.geoapify.com">
-
-  <link rel="dns-prefetch" href="//api.geoapify.com">
-
-  <script type="application/ld+json">
-{
-  "@context":"https://schema.org",
-  "@type":"MobileApplication",
-  "name":"Tuzla Parking",
-  "applicationCategory":"NavigationApplication",
-  "operatingSystem":"Android,iOS",
-  "browserRequirements":"Requires JavaScript",
-  "url":"https://tuzlaparking.vercel.app",
-  "description":"SMS Parking Tuzla - Progressive Web Application with 2 taps, simple SMS parking payment in Tuzla, GPS routing, timer.",
-  "inLanguage":[
-    "bs",
-    "en",
-    "de"
-  ],
-  "applicationSubCategory":"TravelApplication",
-  "offers":{
-    "@type":"Offer",
-    "price":"0",
-    "priceCurrency":"BAM"
-  },
-
-  ]
-}
-</script>
-
+  
 </head>
 
-<body class="bg-[#050d80] text-black antialiased overflow-x-hidden selection:bg-[#cc9e06] selection:text-white">
-
-  <noscript>
-    You need to enable JavaScript to run Tuzla Parking.
-  </noscript>
-
+<body
+  class="bg-gradient-to-br from-[#0c2340] via-[#08182e] to-[#040c1a] text-slate-100 antialiased overflow-x-hidden selection:bg-[#d4af37] selection:text-[#040c1a]">
   <div id="root"></div>
-
   <script type="module" src="/src/main.tsx"></script>
-
 </body>
 
 </html>

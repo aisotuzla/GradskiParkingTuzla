@@ -63,6 +63,11 @@ export interface TranslationSchema {
     noResults: string;
     locateClosest: string;
     closestBadge: string;
+    mapButton: string;
+    routeButton: string;
+    paySmsButton: string;
+    dayPrice: string;
+    zoneLabel: string;
   };
   timer: {
     title: string;
@@ -75,6 +80,14 @@ export interface TranslationSchema {
     expiresAt: string;
     warning10Min: string;
     cancelSession: string;
+    historyTitle?: string;
+    dayTotal?: string;
+    monthTotal?: string;
+    totalPayments?: string;
+    totalSpent?: string;
+    clearHistory?: string;
+    noHistory?: string;
+    repaySms?: string;
   };
   pwa: {
     installPrompt: string;
@@ -164,6 +177,11 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
       noResults: 'Nije pronađen nijedan parking.',
       locateClosest: 'Pronađi Najbliži Parking',
       closestBadge: 'Najbliže',
+      mapButton: 'Karta',
+      routeButton: 'Ruta',
+      paySmsButton: 'Plati SMS',
+      dayPrice: 'Dan',
+      zoneLabel: 'Zona',
     },
     timer: {
       title: 'Aktivni Parking Tajmer',
@@ -176,6 +194,14 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
       expiresAt: 'Ističe u',
       warning10Min: 'PAŽNJA: Parking ističe za manje od 10 minuta!',
       cancelSession: 'Završi Sesiju',
+      historyTitle: 'Historija Plaćanja & Statistika',
+      dayTotal: 'Danas ukupno',
+      monthTotal: 'Ovaj mjesec',
+      totalPayments: 'Ukupno plaćanja',
+      totalSpent: 'Ukupno potrošeno',
+      clearHistory: 'Obriši historiju',
+      noHistory: 'Nema zabilježenih prethodnih plaćanja.',
+      repaySms: 'Ponovo plati',
     },
     pwa: {
       installPrompt: 'Instalirajte Tuzla Parking aplikaciju za brzi pristup i offline rad.',
@@ -264,6 +290,11 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
       noResults: 'No parking lots found matching query.',
       locateClosest: 'Locate Closest Parking',
       closestBadge: 'Closest',
+      mapButton: 'Map',
+      routeButton: 'Route',
+      paySmsButton: 'Pay SMS',
+      dayPrice: 'Day',
+      zoneLabel: 'Zone',
     },
     timer: {
       title: 'Active Parking Countdown',
@@ -276,6 +307,14 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
       expiresAt: 'Expires at',
       warning10Min: 'WARNING: Parking expires in less than 10 minutes!',
       cancelSession: 'Clear Session',
+      historyTitle: 'Payment History & Statistics',
+      dayTotal: 'Today Total',
+      monthTotal: 'This Month',
+      totalPayments: 'Total Payments',
+      totalSpent: 'Total Spent',
+      clearHistory: 'Clear History',
+      noHistory: 'No previous payment records stored.',
+      repaySms: 'Re-pay SMS',
     },
     pwa: {
       installPrompt: 'Install Tuzla Parking PWA for instant access and full offline navigation.',
@@ -364,6 +403,11 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
       noResults: 'Keine Parkplätze gefunden.',
       locateClosest: 'Nächsten Parkplatz finden',
       closestBadge: 'Nächster',
+      mapButton: 'Karte',
+      routeButton: 'Route',
+      paySmsButton: 'SMS Bezahlen',
+      dayPrice: 'Tag',
+      zoneLabel: 'Zone',
     },
     timer: {
       title: 'Aktive Parkuhr',
@@ -376,6 +420,14 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
       expiresAt: 'Endet um',
       warning10Min: 'ACHTUNG: Ihr Parkschein läuft in unter 10 Minuten ab!',
       cancelSession: 'Sitzung Beenden',
+      historyTitle: 'Zahlungshistorie & Statistik',
+      dayTotal: 'Heute Gesamt',
+      monthTotal: 'Diesen Monat',
+      totalPayments: 'Zahlungen Ges.',
+      totalSpent: 'Gesamtausgaben',
+      clearHistory: 'Historie Löschen',
+      noHistory: 'Keine bisherigen Zahlungen gespeichert.',
+      repaySms: 'Erneut Zählen',
     },
     pwa: {
       installPrompt: 'Installieren Sie Tuzla Parking als App für schnellen Zugriff und Offline-Nutzung.',

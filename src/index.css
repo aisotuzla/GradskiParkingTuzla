@@ -7,11 +7,11 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: #090e52;
+    background: #020c97f8;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #08224d;
+    background: #041681;
     border-radius: 9999px;
     border: 1px solid rgba(212, 175, 55, 0.3);
   }
@@ -21,37 +21,36 @@
   }
 }
 
-/* Custom MapLibre Dark Popup styling */
-.maplibregl-popup-content {
-  background: #06127c !important;
-  color: #f8fafc !important;
+/* Leaflet Popup Styling – Royal Dark Blue Glassmorphism */
+.leaflet-popup-content-wrapper {
+  background: linear-gradient(135deg, #091a3a 0%, #040c1e 100%) !important;
+  color: #ffffff !important;
+  border-radius: 16px !important;
   border: 1px solid rgba(212, 175, 55, 0.4) !important;
-  border-radius: 1rem !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.7) !important;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(29, 78, 216, 0.3) !important;
   padding: 0 !important;
-  overflow: hidden !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.leaflet-popup-content {
   margin: 0 !important;
   line-height: 1.4 !important;
 }
 
-.maplibregl-popup-tip {
-  border-top-color: #08224d !important;
-  border-bottom-color: #08224d !important;
+.leaflet-popup-tip {
+  background: #040c1e !important;
+  border: 1px solid rgba(212, 175, 55, 0.3) !important;
+  box-shadow: none !important;
 }
 
-.maplibregl-map {
-  font-family: inherit !important;
-  background-color: #040675 !important;
-}
-
-/* Polygon Tooltip (if needed later) */
-.custom-polygon-tooltip {
-  background-color: #08224d !important;
+.leaflet-popup-close-button {
   color: #d4af37 !important;
-  border: 1px solid rgba(212, 175, 55, 0.4) !important;
-  font-weight: 700 !important;
-  font-size: 11px !important;
-  border-radius: 6px !important;
-  padding: 4px 8px !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+  font-size: 20px !important;
+  padding: 8px 10px !important;
+  font-weight: bold !important;
 }
+
+.leaflet-popup-close-button:hover {
+  color: #ffffff !important;
+}
+
