@@ -170,13 +170,12 @@ export default function App() {
 
   const handleStartNavigation = async (lot: ParkingLotData) => {
     setSelectedLot(lot);
-    // Use user GPS location if available, otherwise default fallback to Tuzla city center
-    const startLoc = userLocation || TUZLA_CENTER;
+    const startLoc = userLocation || (await handleRequestLocation()) || TUZLA_CENTER;
 
     // Immediately open navigation mode and draw route on map
     const instantRoute = generateOfflineRoute(startLoc, lot);
-    setActiveRoute(instantRoute);
     setActiveTab('map');
+    setActiveRoute(instantRoute);
 
     if (navigator.onLine) {
       try {
@@ -194,6 +193,7 @@ export default function App() {
     if (lot) {
       setSelectedLot(lot);
     }
+    setActiveTab('map');
     setIsPayModalOpen(true);
   };
 

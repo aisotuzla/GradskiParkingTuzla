@@ -2,6 +2,7 @@ import { NavigationRoute, ParkingLotData, RouteStep, UserLocation } from '../typ
 import { TUZLA_OFFLINE_ROAD_NODES } from '../data/parkingData';
 
 const GEOAPIFY_API_KEY =
+  import.meta.env.GEOAPIFY_ROUTING_API ||
   import.meta.env.VITE_GEOAPIFY_ROUTING_API ||
   import.meta.env.VITE_GEOAPIFY_API_KEY ||
   '';

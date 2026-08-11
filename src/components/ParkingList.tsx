@@ -12,7 +12,7 @@ interface ParkingListProps {
   onPaySms: (lot: ParkingLotData) => void;
   onStartNavigation: (lot: ParkingLotData) => void;
   userLocation: UserLocation | null;
-  onRequestUserLocation: () => void;
+  onRequestUserLocation: () => Promise<UserLocation | null>;
   currentLang: Language;
 }
 
@@ -78,8 +78,15 @@ export const ParkingList: React.FC<ParkingListProps> = ({
   // Automatic nearest lot selection disabled; user will select manually
   const closestLotId = null;
 
+  const handleStartNavigation = async (lot: ParkingLotData) => {
+    if (!userLocation) {
+      await onRequestUserLocation();
+    }
+    onStartNavigation(lot);
+  };
+
   return (
-    <div className="flex flex-col h-full bg-[#08153b] text-slate-100 p-3 sm:p-4 max-w-md mx-auto pb-24 font-sans">
+    <div className="flex flex-col min-h-full bg-[#08153b] text-slate-100 p-3 sm:p-4 max-w-md mx-auto font-sans">
       {/* Search & Filter Header */}
       <div className="space-y-2.5 mb-3">
         {/* Search Input Bar */}
@@ -151,7 +158,7 @@ export const ParkingList: React.FC<ParkingListProps> = ({
       </div>
 
       {/* Parking Lot Cards */}
-      <div className="space-y-2.5 overflow-y-auto pr-1 custom-scrollbar">
+      <div className="space-y-2.5 overflow-y-auto pr-1 custom-scrollbar pb-3">
         {filteredLots.length === 0 ? (
           <div className="text-center py-10 bg-[#0b1a45] border border-slate-700/50 rounded-2xl p-6">
             <Car className="w-10 h-10 text-slate-500 mx-auto mb-2" />
@@ -230,11 +237,6 @@ export const ParkingList: React.FC<ParkingListProps> = ({
                       {feat}
                     </span>
                   ))}
-                  {lot.capacity && (
-                    <span className="px-2 py-0.5 rounded bg-[#0a1128] border border-slate-700/60 text-[10px] text-slate-400">
-                      ~{lot.capacity} {t.parkingList.spaces}
-                    </span>
-                  )}
                 </div>
 
                 {/* Action Buttons */}
@@ -248,7 +250,7 @@ export const ParkingList: React.FC<ParkingListProps> = ({
                   </button>
 
                   <button
-                    onClick={() => onStartNavigation(lot)}
+                    onClick={() => handleStartNavigation(lot)}
                     className="py-1.5 px-2 rounded-md bg-[#14213d] hover:bg-[#1f2e52] border border-[#d4af37]/30 text-slate-100 text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
                   >
                     <Compass className="w-3 h-3 text-[#d4af37]" />

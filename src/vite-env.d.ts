@@ -3,6 +3,7 @@
 interface ImportMetaEnv {
   readonly VITE_GEOAPIFY_API_KEY?: string;
   readonly VITE_GEOAPIFY_ROUTING_API?: string;
+  readonly GEOAPIFY_ROUTING_API?: string;
   readonly VITE_GEOAPIFY_MAP_TILES_API?: string;
   readonly VITE_GEOAPIFY_GEOCODING_API?: string;
   readonly VITE_GEOAPIFY_STATIC_API?: string;

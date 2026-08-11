@@ -1,5 +1,5 @@
 import React from 'react';
-import { Shield, Globe, Wifi, WifiOff, Clock, Download, Car } from 'lucide-react';
+import { Clock, Car } from 'lucide-react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../data/translations';
 import { isWorkingHoursNow, getTimeUntilWorkingHoursEnd } from '../services/smsService';
@@ -84,24 +84,24 @@ export const Header: React.FC<HeaderProps> = ({
 
 
 
-          {/* Language Flag Selector (Bosnia 🇧🇦, UK 🇬🇧, Germany 🇩🇪) */}
-          <div className="flex bg-[#041530] rounded-full p-0.5 border border-[#d4af37]/30 shadow-[0_0_18px_rgba(29,78,216,0.22)]">
+          {/* Language Flag Selector */}
+          <div className="flex bg-[#041530] rounded-full p-0.5 border border-[#d4af37]/70 shadow-[0_0_18px_rgba(29,78,216,0.22)]">
             {[
-              { code: 'bs', flag: '🇧🇦', title: 'Bosanski' },
-              { code: 'en', flag: '🇬🇧', title: 'English' },
-              { code: 'de', flag: '🇩🇪', title: 'Deutsch' },
+              { code: 'bs', flag: 'https://flagcdn.com/w40/ba.png', title: 'Bosanski' },
+              { code: 'en', flag: 'https://flagcdn.com/w40/gb.png', title: 'English' },
+              { code: 'de', flag: 'https://flagcdn.com/w40/de.png', title: 'Deutsch' },
             ].map(({ code, flag, title }) => (
               <button
                 key={code}
                 onClick={() => onLanguageChange(code as Language)}
-                className={`px-2 py-1 rounded-full transition-all flex items-center justify-center ${
+                className={`w-8 h-7 rounded-full transition-all flex items-center justify-center border ${
                   currentLang === code
-                    ? 'bg-gradient-to-b from-[#1d4ed8] to-[#08153b] shadow-md scale-105 text-white'
-                    : 'opacity-60 hover:opacity-100'
+                    ? 'bg-[#061d40] border-[#d4af37] shadow-md scale-105'
+                    : 'bg-transparent border-transparent opacity-70 hover:opacity-100'
                 }`}
                 title={title}
               >
-                <span className="text-base leading-none">{flag}</span>
+                <img src={flag} alt={title} className="w-5 h-5 rounded-full object-cover" />
               </button>
             ))}
           </div>
