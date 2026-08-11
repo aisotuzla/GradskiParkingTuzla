@@ -4,8 +4,6 @@ import {
   AlertTriangle,
   RefreshCw,
   XCircle,
-  Car,
-  Shield,
   Send,
   Bell,
   BellRing,
@@ -22,7 +20,6 @@ import { TRANSLATIONS } from '../data/translations';
 import {
   formatPlateDisplay,
   generateSmsUri,
-  saveActiveSession,
   getPaymentHistory,
   getPaymentStats,
   clearPaymentHistory,

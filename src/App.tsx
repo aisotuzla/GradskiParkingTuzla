@@ -11,7 +11,7 @@ import { NavigationDrawer } from './components/NavigationDrawer';
 import { ActiveTimerWidget } from './components/ActiveTimerWidget';
 import { VehicleManager } from './components/VehicleManager';
 import { getActiveSession, saveActiveSession } from './services/smsService';
-import { calculateRoute, calculateDistanceMeters, generateOfflineRoute } from './services/routingService';
+import { calculateRoute, generateOfflineRoute } from './services/routingService';
 
 
 // Center of Tuzla city coordinates (Trg slobode / Centar)
@@ -124,10 +124,11 @@ export default function App() {
     }
   };
 
-  const handleRequestLocation = () => {
+  const handleRequestLocation = async (): Promise<UserLocation | null> => {
     if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
+      return await new Promise((resolve) => {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
           const rawLat = position?.coords?.latitude;
           const rawLng = position?.coords?.longitude;
 
@@ -147,18 +148,23 @@ export default function App() {
               speed: position.coords.speed || undefined,
             };
             setUserLocation(loc);
+            resolve(loc);
           } else {
             setUserLocation(TUZLA_CENTER);
+            resolve(TUZLA_CENTER);
           }
-        },
-        (error) => {
-          console.warn('Geolocation access error, using Tuzla city center fallback', error);
-          setUserLocation(TUZLA_CENTER);
-        },
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
-      );
+          },
+          (error) => {
+            console.warn('Geolocation access error, using Tuzla city center fallback', error);
+            setUserLocation(TUZLA_CENTER);
+            resolve(TUZLA_CENTER);
+          },
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+        );
+      });
     } else {
       setUserLocation(TUZLA_CENTER);
+      return TUZLA_CENTER;
     }
   };
 

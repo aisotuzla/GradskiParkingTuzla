@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Locate } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -13,7 +13,7 @@ interface MapViewProps {
   onPaySms: (lot: ParkingLotData) => void;
   onStartNavigation: (lot: ParkingLotData) => void;
   userLocation: UserLocation | null;
-  onRequestUserLocation: () => void;
+  onRequestUserLocation: () => Promise<UserLocation | null>;
   activeRoute: NavigationRoute | null;
   currentLang: Language;
   filterZone: ParkingZone | 'all';
@@ -184,12 +184,18 @@ export const MapView: React.FC<MapViewProps> = ({
         const smsBtn = document.getElementById(`sms-${lot.id}`);
         const navBtn = document.getElementById(`nav-${lot.id}`);
         if (smsBtn) smsBtn.onclick = e => { e.stopPropagation(); onPaySms(lot); };
-        if (navBtn) navBtn.onclick = e => { e.stopPropagation(); onStartNavigation(lot); };
+        if (navBtn) {
+          navBtn.onclick = async e => {
+            e.stopPropagation();
+            await onRequestUserLocation();
+            onStartNavigation(lot);
+          };
+        }
       });
       marker.on('click', () => { onSelectLot(lot); });
       markersRef.current[lot.id] = marker;
     });
-  }, [parkingLots, filterZone, selectedLot]);
+  }, [parkingLots, filterZone, selectedLot, onPaySms, onStartNavigation, onRequestUserLocation]);
 
   // Highlight selected lot and fly to it (only if no active navigation route)
   useEffect(() => {

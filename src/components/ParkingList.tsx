@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, MapPin, Navigation, MessageSquare, Car, Zap, Shield, CheckCircle, Compass, Locate } from 'lucide-react';
+import { Search, MapPin, MessageSquare, Car, Compass, Locate } from 'lucide-react';
 import { Language, ParkingLotData, ParkingZone, UserLocation } from '../types';
 import { ZONE_DETAILS } from '../data/parkingData';
 import { TRANSLATIONS } from '../data/translations';

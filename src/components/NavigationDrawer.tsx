@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React from 'react';
 import {
   X,
   Compass,
@@ -7,12 +7,7 @@ import {
   ArrowRight,
   CheckCircle2,
   WifiOff,
-  Clock,
   MessageSquare,
-  Volume2,
-  VolumeX,
-  Settings2,
-  Languages,
 } from 'lucide-react';
 import { Language, NavigationRoute, ParkingLotData } from '../types';
 import { TRANSLATIONS } from '../data/translations';
