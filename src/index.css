@@ -11,7 +11,7 @@
 
   .theme-panel {
     background: linear-gradient(180deg, rgba(11, 30, 79, 0.98) 0%, rgba(4, 14, 38, 0.98) 100%);
-    border: 1px solid rgba(212, 175, 55, 0.36);
+    border: 1px solid rgba(233, 181, 13, 0.36);
     box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 0 22px rgba(29, 78, 216, 0.16);
   }
 
@@ -37,7 +37,7 @@
 
 html, body, #root {
   min-height: 100%;
-  background: #030816;
+  background: #03072b;
   color: #ffffff;
 }
 
