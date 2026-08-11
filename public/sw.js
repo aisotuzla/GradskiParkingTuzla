@@ -2,9 +2,9 @@ import { precacheAndRoute } from 'workbox-precaching';
 
 precacheAndRoute(self.__WB_MANIFEST || []);
 
-const CACHE_NAME = 'tuzla-parking-v2';
-const TILE_CACHE_NAME = 'tuzla-tiles-v2';
-const DATA_CACHE_NAME = 'tuzla-data-v2';
+const CACHE_NAME = 'tuzla-parking-v3';
+const TILE_CACHE_NAME = 'tuzla-tiles-v3';
+const DATA_CACHE_NAME = 'tuzla-data-v3';
 
 const ASSETS_TO_CACHE = [
   '/',
@@ -13,18 +13,22 @@ const ASSETS_TO_CACHE = [
   '/src/main.tsx',
   '/src/index.css',
   '/src/App.tsx',
-  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'
+  'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+  '/tile/online-style.json',
+  '/tile/offline-style.json',
+  '/tile/tuzla.pmtiles',
 ];
 
 // Helper to determine if request is for map tile images
 function isTileRequest(url) {
   return (
+    url.includes('/tile/') ||
     url.includes('tile.openstreetmap.org') ||
     url.includes('basemaps.cartocdn.com') ||
     url.includes('stadiamaps') ||
     url.includes('mapbox') ||
-    url.includes('/tiles/') ||
-    url.match(/\/\d+\/\d+\/\d+(\.webp|\.jpg|\.webp)?/)
+    url.includes('/pmtiles/') ||
+    url.match(/\/\d+\/\d+\/\d+(\.pmtiles|\.jpg|\.webp)?/)
   );
 }
 
@@ -90,8 +94,10 @@ self.addEventListener('fetch', (event) => {
               return networkResponse;
             })
             .catch(() => {
-              // Return transparent 1x1 placeholder or fallback if unavailable
-              return new Response('', { status: 404, statusText: 'Tile Not Cached' });
+              return caches.match('/tile/14/9040/5921.webp').then((fallback) => {
+                if (fallback) return fallback;
+                return new Response('', { status: 404, statusText: 'Tile Not Cached' });
+              });
             });
         });
       })

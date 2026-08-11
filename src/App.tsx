@@ -208,7 +208,7 @@ export default function App() {
   };
 
   return (
-    <div className="h-[100dvh] w-full bg-gradient-to-br from-[#1d4ed8] via-[#1e3a8a] to-[#0a142f] text-slate-100 flex flex-col font-sans select-none antialiased overflow-hidden">
+    <div className="h-[100dvh] w-full bg-gradient-to-br from-[#0f2f66] via-[#081c44] to-[#030816] text-white flex flex-col font-sans select-none antialiased overflow-hidden">
       {/* Top Smartphone Header */}
       <Header
         currentLang={currentLang}
@@ -244,7 +244,7 @@ export default function App() {
             </div>
 
             {/* Bottom 50% of screen: Solid Blue Navigation Box, Golden Title, White Text */}
-            <div className="h-1/2 w-full bg-gradient-to-b from-[#1d4ed8]/95 via-[#1e3a8a]/95 to-[#0a142f]/98 backdrop-blur-xl border-t-2 border-[#d4af37]/60 text-white z-30 opacity-100 overflow-hidden flex flex-col shadow-2xl">
+            <div className="h-1/2 w-full bg-gradient-to-b from-[#10306d]/95 via-[#081f4c]/96 to-[#030816]/99 backdrop-blur-xl border-t-2 border-[#d4af37]/60 text-white z-30 opacity-100 overflow-hidden flex flex-col shadow-2xl">
               <NavigationDrawer
                 route={activeRoute}
                 onStopNavigation={() => setActiveRoute(null)}
@@ -289,14 +289,29 @@ export default function App() {
             )}
 
             {activeTab === 'pay' && (
-              <div className="p-4 max-w-md mx-auto">
-                <button
-                  onClick={() => handleOpenSmsPay(selectedLot || TUZLA_PARKING_DATA[0])}
-                  className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-[#d4af37] to-[#b8860b] text-[#0a1128] font-black text-base flex items-center justify-center gap-2 shadow-xl hover:brightness-105 active:scale-95 transition-all"
-                >
-                  <MessageSquare className="w-5 h-5 fill-current" />
-                  <span>Otvori SMS Plaćanje ({selectedLot ? selectedLot.name : 'Zona 0/1/2'})</span>
-                </button>
+              <div className="p-3 sm:p-4 max-w-md mx-auto pb-24 text-slate-100">
+                <div className="bg-[#1a2a44] border border-[#d4af37]/40 rounded-2xl p-4 shadow-2xl">
+                  <div className="flex items-center gap-3 mb-3 border-b border-slate-700/50 pb-2.5">
+                    <div className="w-9 h-9 rounded-lg bg-[#d4af37] text-[#0a1128] flex items-center justify-center font-bold shadow-sm">
+                      <MessageSquare className="w-5 h-5 fill-current" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-bold text-sm text-[#d4af37] uppercase tracking-wide">
+                        SMS Placanje
+                      </h3>
+                      <p className="text-[11px] text-slate-300 truncate">
+                        {selectedLot ? selectedLot.name : 'Odaberite zonu u SMS obrascu'}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => handleOpenSmsPay(selectedLot || TUZLA_PARKING_DATA[0])}
+                    className="w-full py-3.5 px-4 rounded-lg bg-[#d4af37] text-[#0a1128] font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:bg-[#b8860b] active:scale-95 transition-all"
+                  >
+                    <MessageSquare className="w-5 h-5 fill-current" />
+                    <span>Otvori SMS Placanje</span>
+                  </button>
+                </div>
               </div>
             )}
 
@@ -324,13 +339,13 @@ export default function App() {
       />
 
       {/* Fixed Smartphone Bottom Navigation Bar */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r from-[#1d4ed8]/95 via-[#1e3a8a]/95 to-[#0a142f]/98 backdrop-blur-xl border-t border-[#d4af37]/30 px-3 py-2 shadow-2xl h-14">
+      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r from-[#0f2f66]/96 via-[#081c44]/97 to-[#030816]/99 backdrop-blur-xl border-t border-[#d4af37]/30 px-3 py-2 shadow-2xl h-14">
         <div className="max-w-md mx-auto grid grid-cols-5 gap-1 text-center">
           {/* Map Tab */}
           <button
             onClick={() => setActiveTab('map')}
             className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all ${activeTab === 'map'
-              ? 'text-[#d4af37] font-bold bg-[#0c2340]/90 border border-[#d4af37]/50 shadow-lg backdrop-blur-md'
+              ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
               : 'text-slate-400 hover:text-slate-200'
               }`}
           >
@@ -342,7 +357,7 @@ export default function App() {
           <button
             onClick={() => setActiveTab('list')}
             className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all ${activeTab === 'list'
-              ? 'text-[#d4af37] font-bold bg-[#0c2340]/90 border border-[#d4af37]/50 shadow-lg backdrop-blur-md'
+              ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
               : 'text-slate-400 hover:text-slate-200'
               }`}
           >
@@ -356,7 +371,7 @@ export default function App() {
               const payLot = selectedLot || TUZLA_PARKING_DATA[0];
               handleOpenSmsPay(payLot);
             }}
-            className="flex flex-col items-center justify-center py-1 rounded-xl bg-gradient-to-br from-[#d4af37] via-[#f3e5ab] to-[#b8860b] text-[#040c1a] font-black shadow-lg shadow-[#d4af37]/25 active:scale-95 transition-all -mt-3 border-2 border-[#0e2a52]"
+            className="flex flex-col items-center justify-center py-1 rounded-xl bg-gradient-to-br from-[#ffd86b] via-[#d4af37] to-[#8f6a13] text-[#040c1a] font-black shadow-lg shadow-[#d4af37]/25 active:scale-95 transition-all -mt-3 border-2 border-[#0e2a52]"
           >
             <MessageSquare className="w-5 h-5 mb-0.5 fill-current" />
             <span className="text-[9px] uppercase font-black leading-none">{t.tabs.pay}</span>
@@ -366,7 +381,7 @@ export default function App() {
           <button
             onClick={() => setActiveTab('timer')}
             className={`relative flex flex-col items-center justify-center py-1 rounded-xl transition-all ${activeTab === 'timer'
-              ? 'text-[#d4af37] font-bold bg-[#0c2340]/90 border border-[#d4af37]/50 shadow-lg backdrop-blur-md'
+              ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
               : 'text-slate-400 hover:text-slate-200'
               }`}
           >
@@ -381,7 +396,7 @@ export default function App() {
           <button
             onClick={() => setActiveTab('vehicle')}
             className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all ${activeTab === 'vehicle'
-              ? 'text-[#d4af37] font-bold bg-[#0c2340]/90 border border-[#d4af37]/50 shadow-lg backdrop-blur-md'
+              ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
               : 'text-slate-400 hover:text-slate-200'
               }`}
           >

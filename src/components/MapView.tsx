@@ -40,60 +40,79 @@ export const MapView: React.FC<MapViewProps> = ({
   const routeRef = useRef<L.Polyline | null>(null);
   const t = TRANSLATIONS[currentLang];
 
-  // Initialise Leaflet map with fast raster tiles (CARTO Voyager primary, OSM fallback)
+  // Initialise Leaflet map with Carto raster tiles, then fall back to local tiles after a real offline delay.
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
     const map = L.map(mapContainerRef.current, {
       center: [44.538, 18.675], // lat, lng
       zoom: 15,
+      minZoom: 14,
+      maxZoom: 17,
     });
 
-    const cartoUrl = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png';
-    const osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-
-    const cartoLayer = L.tileLayer(cartoUrl, {
-      subdomains: 'abcd',
-      maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-    });
-
-    const osmLayer = L.tileLayer(osmUrl, {
-      attribution: '&copy; OpenStreetMap contributors',
-    });
-
-    let loaded = false;
-
-    cartoLayer.on('load', () => {
-      loaded = true;
-    });
-
-    cartoLayer.addTo(map);
-
-    // 10-second fallback timer if CARTO fails or takes too long to load
-    const timeoutId = setTimeout(() => {
-      if (!loaded) {
-        console.warn('Primary CARTO tiles load timed out (>10s). Falling back to OpenStreetMap tiles.');
-        if (map.hasLayer(cartoLayer)) {
-          map.removeLayer(cartoLayer);
-        }
-        osmLayer.addTo(map);
+    const onlineLayer = L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      {
+        subdomains: 'abcd',
+        minZoom: 14,
+        maxZoom: 19,
+        tileSize: 256,
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
       }
-    }, 10000);
+    );
 
-    cartoLayer.on('tileerror', () => {
-      if (!loaded) {
-        console.warn('CARTO tile error detected. Falling back to OpenStreetMap tiles.');
+    const offlineLayer = L.tileLayer('/tile/{z}/{x}/{y}.webp', {
+      minZoom: 14,
+      maxZoom: 17,
+      maxNativeZoom: 17,
+      tileSize: 256,
+      noWrap: true,
+      bounds: [[44.524421222188643, 18.641298698973824], [44.545400280789757, 18.714732252107076]],
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    });
+
+    let onlineLoaded = false;
+    let usingOfflineLayer = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const switchToOfflineLayer = () => {
+      if (usingOfflineLayer) return;
+      usingOfflineLayer = true;
+      if (map.hasLayer(onlineLayer)) {
+        map.removeLayer(onlineLayer);
+      }
+      offlineLayer.addTo(map);
+    };
+
+    const scheduleOfflineFallback = () => {
+      if (timeoutId || usingOfflineLayer) return;
+      timeoutId = setTimeout(() => {
+        timeoutId = null;
+        if (!onlineLoaded || !navigator.onLine) {
+          console.warn('Carto raster tiles unavailable for 10s. Switching to local offline tiles.');
+          switchToOfflineLayer();
+        }
+      }, 10000);
+    };
+
+    onlineLayer.on('load', () => {
+      onlineLoaded = true;
+      if (timeoutId) {
         clearTimeout(timeoutId);
-        if (map.hasLayer(cartoLayer)) {
-          map.removeLayer(cartoLayer);
-        }
-        osmLayer.addTo(map);
+        timeoutId = null;
       }
     });
+
+    onlineLayer.addTo(map);
+
+    scheduleOfflineFallback();
+    window.addEventListener('offline', scheduleOfflineFallback);
 
     mapRef.current = map;
     return () => {
-      clearTimeout(timeoutId);
+      if (timeoutId) clearTimeout(timeoutId);
+      window.removeEventListener('offline', scheduleOfflineFallback);
       map.remove();
       mapRef.current = null;
     };
@@ -241,7 +260,13 @@ export const MapView: React.FC<MapViewProps> = ({
       const coords = activeRoute.coordinates
         .filter(c => Array.isArray(c) && c.length >= 2 && !isNaN(c[0]) && !isNaN(c[1]))
         .map(c => [c[1], c[0]] as [number, number]); // [lat, lng]
-      const poly = L.polyline(coords, { color: '#3B82F6', weight: 5, opacity: 0.9 }).addTo(map);
+      const poly = L.polyline(coords, {
+        color: '#d4af37',
+        weight: 5,
+        opacity: 0.92,
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(map);
       routeRef.current = poly;
       map.fitBounds(poly.getBounds(), { padding: [50, 50] });
     }
@@ -253,21 +278,21 @@ export const MapView: React.FC<MapViewProps> = ({
       {/* Locate button */}
       <button
         onClick={onRequestUserLocation}
-        className="absolute bottom-6 left-3 w-12 h-12 rounded-full bg-[#d4af37] text-[#041530] flex items-center justify-center shadow-xl hover:bg-[#b8860b] transition-transform active:scale-95 border border-[#d4af37]/50"
+        className="absolute bottom-6 left-3 w-12 h-12 rounded-full bg-gradient-to-br from-[#ffd86b] via-[#d4af37] to-[#8f6a13] text-[#041530] flex items-center justify-center shadow-[0_0_0_1px_rgba(255,229,143,0.4),0_12px_30px_rgba(0,0,0,0.45),0_0_20px_rgba(212,175,55,0.35)] hover:brightness-110 transition-transform active:scale-95 border border-[#fff0a8]/50"
         title={t.parkingList.locateClosest}
       >
         <Locate className="w-6 h-6 animate-pulse" />
       </button>
       {/* Zone filter bar */}
       <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-        <div className="pointer-events-auto flex gap-1 bg-[#061d40]/95 backdrop-blur-md p-1 rounded-full border border-[#d4af37]/40 shadow-xl">
+        <div className="pointer-events-auto flex gap-1 bg-[#061d40]/95 backdrop-blur-md p-1 rounded-full border border-[#d4af37]/40 shadow-[0_0_0_1px_rgba(255,229,143,0.08),0_10px_30px_rgba(0,0,0,0.35)]">
           <button
             onClick={() => onFilterZoneChange('all')}
-            className={`px-2 py-1 rounded-full text-xs font-bold ${filterZone === 'all' ? 'bg-[#d4af37] text-[#041530]' : 'text-slate-300 hover:text-white'}`}
+            className={`px-2 py-1 rounded-full text-xs font-bold transition-all ${filterZone === 'all' ? 'bg-gradient-to-r from-[#1d4ed8] via-[#1e3a8a] to-[#08153b] text-white border border-[#d4af37]/50 shadow-[0_0_18px_rgba(29,78,216,0.35)]' : 'text-slate-300 hover:text-white'}`}
           >Sve</button>
           <button
             onClick={() => onFilterZoneChange('0')}
-            className={`px-2 py-1 rounded-full border ${filterZone === '0' ? 'bg-red-500 text-white border-red-400' : 'bg-[#041530] border-red-500/40 text-red-400'}`}
+            className={`px-2 py-1 rounded-full border transition-all ${filterZone === '0' ? 'bg-gradient-to-r from-[#1d4ed8] via-[#1e3a8a] to-[#08153b] text-white border-[#d4af37]/60 shadow-[0_0_18px_rgba(212,175,55,0.22)]' : 'bg-[#041530] border-[#d4af37]/30 text-[#ffd77a]'}`}
           >Z0</button>
         </div>
       </div>

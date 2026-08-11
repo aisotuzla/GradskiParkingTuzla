@@ -50,16 +50,16 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
 
 
   return (
-    <div className="w-full h-full bg-[#061d40] border-t-2 border-[#d4af37]/60 text-white p-3 sm:p-4 flex flex-col justify-between overflow-hidden z-30 opacity-100 shadow-2xl">
+    <div className="w-full h-full bg-gradient-to-b from-[#0c2b63] via-[#081f4c] to-[#030816] border-t-2 border-[#d4af37]/60 text-white p-3 sm:p-4 flex flex-col justify-between overflow-hidden z-30 opacity-100 shadow-2xl">
       {/* Top Bar: Title & Controls */}
       <div className="flex items-center justify-between border-b border-[#d4af37]/30 pb-2 mb-2 shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-[#041530] border border-[#d4af37]/60 flex items-center justify-center shrink-0 shadow-md">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/60 flex items-center justify-center shrink-0 shadow-md">
             <Compass className="w-5 h-5 text-[#d4af37] animate-spin-slow" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-black text-[#d4af37] uppercase tracking-wider">
+              <span className="text-[11px] font-black text-[#ffd86b] uppercase tracking-wider">
                 {t.navigation.title}
               </span>
               {isOffline && (
@@ -69,7 +69,7 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
                 </span>
               )}
             </div>
-            <h2 className="font-black text-base text-[#d4af37] truncate">
+            <h2 className="font-black text-base text-white truncate">
               {targetLot.name}
             </h2>
           </div>
@@ -79,7 +79,7 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
           {/* Close / Stop button */}
           <button
             onClick={onStopNavigation}
-            className="p-1.5 rounded-full bg-[#041530] text-white hover:bg-red-600 transition-colors border border-slate-700"
+            className="p-1.5 rounded-full bg-[#041530] text-white hover:bg-red-600 transition-colors border border-[#d4af37]/25"
             title="Zaustavi Navigaciju"
           >
             <X className="w-5 h-5" />
@@ -149,7 +149,7 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
 
         <button
           onClick={() => onPaySmsForLot(targetLot)}
-          className="py-2.5 px-3 rounded-xl bg-[#d4af37] text-[#061d40] font-black text-xs flex items-center justify-center gap-1.5 shadow-lg hover:bg-[#b8860b] active:scale-95 transition-all text-center"
+          className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#ffd86b] via-[#d4af37] to-[#8f6a13] text-[#061d40] font-black text-xs flex items-center justify-center gap-1.5 shadow-lg hover:brightness-110 active:scale-95 transition-all text-center"
         >
           <MessageSquare className="w-4 h-4 fill-current" />
           <span>Stigao sam - SMS</span>

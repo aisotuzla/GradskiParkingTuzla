@@ -223,10 +223,14 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
           </button>
         </div>
       ) : (
-        <div className="p-5 bg-[#1a2a44] border border-[#d4af37]/30 rounded-2xl text-center text-slate-300 shadow-lg">
-          <Clock className="w-10 h-10 text-[#d4af37] mx-auto mb-2 opacity-80" />
-          <h3 className="font-bold text-sm text-slate-100 mb-1">{t.timer.title}</h3>
-          <p className="text-xs text-slate-400 mb-2">{t.timer.noActiveSession}</p>
+        <div className="p-5 bg-gradient-to-b from-[#1a2a44] via-[#10213f] to-[#0a1128] border border-[#d4af37]/40 rounded-2xl text-center text-slate-300 shadow-2xl">
+          <div className="w-12 h-12 rounded-xl bg-[#0a1128] border border-[#d4af37]/50 text-[#d4af37] mx-auto mb-3 flex items-center justify-center shadow-inner">
+            <Clock className="w-7 h-7 opacity-90" />
+          </div>
+          <h3 className="font-bold text-sm text-[#d4af37] uppercase tracking-wide mb-1">
+            {t.timer.title}
+          </h3>
+          <p className="text-xs text-slate-300 mb-1">{t.timer.noActiveSession}</p>
         </div>
       )}
 

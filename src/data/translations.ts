@@ -103,13 +103,13 @@ export interface TranslationSchema {
     features: string;
     address: string;
     area: string;
+    priceList?: string;
+    zoneNumbers?: string;
   };
-  voice?: {
+  vehicle: {
     title: string;
     subtitle: string;
-    listening: string;
-    tapToSpeak: string;
-    suggestedCommands: string;
+    add: string;
   };
 }
 
@@ -217,15 +217,16 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
       features: 'Karakteristike',
       address: 'Adresa',
       area: 'Područje',
+      priceList: 'Cjenovnik',
+      zoneNumbers: 'Brojevi Zona',
     },
-    voice: {
-      title: 'Glasovne Komande',
+    vehicle: {
+      title: 'Moja vozila/tablice',
       subtitle: 'Pametno upravljanje glasom',
-      listening: 'Slušam... Recite komandu',
-      tapToSpeak: 'Pritisnite mikrofon i izgovorite komandu',
-      suggestedCommands: 'Brze komande (Izgovorite ili dodirnite):',
+      add: 'Dodaj vozilo',
     },
   },
+      
 
   en: {
     appTitle: 'Tuzla Parking',
@@ -331,16 +332,14 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
       address: 'Address',
       area: 'Area',
     },
-    voice: {
-      title: 'Voice Commands',
-      subtitle: 'Smart hands-free assistant',
-      listening: 'Listening... Say a command',
-      tapToSpeak: 'Tap microphone and speak your command',
-      suggestedCommands: 'Quick commands (Speak or tap):',
+    vehicle: {
+      title: 'My Vehicles/Plates',
+      subtitle: 'Manage your saved vehicle plates',
+      add: 'Add Vehicle',
     },
   },
-
-  de: {
+  
+de: {
     appTitle: 'Tuzla Parking',
     appSubtitle: 'Intelligentes Parken & Navigation',
     tabs: {
@@ -444,12 +443,9 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
       address: 'Adresse',
       area: 'Bereich',
     },
-    voice: {
+    vehicle: {
       title: 'Sprachbefehle',
       subtitle: 'Intelligenter Sprachassistent',
-      listening: 'Höre zu... Bitte Befehl sprechen',
-      tapToSpeak: 'Tippen Sie auf das Mikrofon und sprechen Sie',
-      suggestedCommands: 'Schnellbefehle (Sprechen oder Tippen):',
-    },
+      add: 'Fahrzeug Hinzufügen',},
   },
 };
