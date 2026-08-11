@@ -1,17 +1,31 @@
 @import "tailwindcss";
 
 @layer utilities {
+  .gold-gradient-text {
+    background: linear-gradient(180deg, #fff4b0 0%, #d4af37 40%, #8f6a13 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 18px rgba(212, 175, 55, 0.18);
+  }
+
+  .theme-panel {
+    background: linear-gradient(180deg, rgba(11, 30, 79, 0.98) 0%, rgba(4, 14, 38, 0.98) 100%);
+    border: 1px solid rgba(233, 181, 13, 0.36);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45), 0 0 22px rgba(29, 78, 216, 0.16);
+  }
+
   .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
     height: 6px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
-    background: #090e52;
+    background: #020c97f8;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #08224d;
+    background: #041681;
     border-radius: 9999px;
     border: 1px solid rgba(212, 175, 55, 0.3);
   }
@@ -21,37 +35,55 @@
   }
 }
 
-/* Custom MapLibre Dark Popup styling */
-.maplibregl-popup-content {
-  background: #06127c !important;
-  color: #f8fafc !important;
+html, body, #root {
+  min-height: 100%;
+  background: #03072b;
+  color: #ffffff;
+}
+
+body {
+  background:
+    radial-gradient(circle at top, rgba(29, 78, 216, 0.28), transparent 34%),
+    linear-gradient(180deg, #0b1f4d 0%, #07152f 44%, #030816 100%);
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Leaflet Popup Styling */
+.leaflet-popup-content-wrapper {
+  background: linear-gradient(135deg, #0a2557 0%, #040c1e 100%) !important;
+  color: #ffffff !important;
+  border-radius: 16px !important;
   border: 1px solid rgba(212, 175, 55, 0.4) !important;
-  border-radius: 1rem !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7), 0 8px 10px -6px rgba(0, 0, 0, 0.7) !important;
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.8), 0 0 20px rgba(29, 78, 216, 0.3) !important;
   padding: 0 !important;
-  overflow: hidden !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+.leaflet-popup-content {
   margin: 0 !important;
   line-height: 1.4 !important;
 }
 
-.maplibregl-popup-tip {
-  border-top-color: #08224d !important;
-  border-bottom-color: #08224d !important;
+.leaflet-popup-tip {
+  background: #040c1e !important;
+  border: 1px solid rgba(212, 175, 55, 0.3) !important;
+  box-shadow: none !important;
 }
 
-.maplibregl-map {
-  font-family: inherit !important;
-  background-color: #040675 !important;
-}
-
-/* Polygon Tooltip (if needed later) */
-.custom-polygon-tooltip {
-  background-color: #08224d !important;
+.leaflet-popup-close-button {
   color: #d4af37 !important;
-  border: 1px solid rgba(212, 175, 55, 0.4) !important;
-  font-weight: 700 !important;
-  font-size: 11px !important;
-  border-radius: 6px !important;
-  padding: 4px 8px !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+  font-size: 20px !important;
+  padding: 8px 10px !important;
+  font-weight: bold !important;
+}
+
+.leaflet-popup-close-button:hover {
+  color: #ffffff !important;
+}
+
+.leaflet-container {
+  background: #030816 !important;
 }

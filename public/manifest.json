@@ -1,5 +1,5 @@
 {
-  "short_name": "TuzlaPark",
+  "short_name": "TuzlaParking",
   "name": "Tuzla Parking - Smart Parking & Navigation",
   "icons": [
     {
@@ -15,7 +15,7 @@
   ],
   "start_url": "/",
   "background_color": "#06127c",
-  "theme_color": "#0B192C",
+  "theme_color": "#010375",
   "display": "standalone",
   "orientation": "portrait",
   "categories": [

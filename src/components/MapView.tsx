@@ -1,12 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { GEOAPIFY_API_KEY } from '../services/routingService';
+import React, { useEffect, useRef } from 'react';
 import { Locate } from 'lucide-react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { Language, NavigationRoute, ParkingLotData, ParkingZone, UserLocation } from '../types';
 import { ZONE_DETAILS, TUZLA_PARKING_ZONE_POLYGON } from '../data/parkingData';
-import * as maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
 import { TRANSLATIONS } from '../data/translations';
-import { OfflineMapController } from './OfflineMapController';
 
 interface MapViewProps {
   parkingLots: ParkingLotData[];
@@ -15,7 +13,7 @@ interface MapViewProps {
   onPaySms: (lot: ParkingLotData) => void;
   onStartNavigation: (lot: ParkingLotData) => void;
   userLocation: UserLocation | null;
-  onRequestUserLocation: () => void;
+  onRequestUserLocation: () => Promise<UserLocation | null>;
   activeRoute: NavigationRoute | null;
   currentLang: Language;
   filterZone: ParkingZone | 'all';
@@ -36,425 +34,266 @@ export const MapView: React.FC<MapViewProps> = ({
   onFilterZoneChange,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<maplibregl.Map | null>(null);
-  const [mapInstance, setMapInstance] = useState<maplibregl.Map | null>(null);
-  const [is3D, setIs3D] = useState(false);
-  const markersRef = useRef<{ [id: string]: maplibregl.Marker }>({});
-  const userMarkerRef = useRef<maplibregl.Marker | null>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const userMarkerRef = useRef<L.Marker | null>(null);
+  const markersRef = useRef<Record<string, L.Marker>>({});
+  const routeRef = useRef<L.Polyline | null>(null);
   const t = TRANSLATIONS[currentLang];
 
-  const defaultCenter: [number, number] = [18.675, 44.538];
-
+  // Initialise Leaflet map with Carto raster tiles, then fall back to local tiles after a real offline delay.
   useEffect(() => {
-    if (!mapContainerRef.current || mapInstanceRef.current) return;
+    if (!mapContainerRef.current || mapRef.current) return;
+    const map = L.map(mapContainerRef.current, {
+      center: [44.538, 18.675], // lat, lng
+      zoom: 15,
+      minZoom: 14,
+      maxZoom: 17,
+    });
 
-    // Primary style: osm-liberty JSON from Geoapify
-    const primaryStyleUrl = `https://maps.geoapify.com/v1/styles/osm-liberty/style.json?apiKey=${GEOAPIFY_API_KEY}`;
-    // Fallback raster style using osm-bright tiles
-    const fallbackStyle: maplibregl.StyleSpecification = {
-      version: 8,
-      sources: {
-        'osm-bright': {
-          type: 'raster',
-          tiles: [`https://maps.geoapify.com/v1/tile/osm-bright/{z}/{x}/{y}.webp?apiKey=${GEOAPIFY_API_KEY}`],
-          tileSize: 256,
-          minzoom: 0,
-          maxzoom: 20
-        }
-      },
-      layers: [
-        {
-          id: 'osm-bright-layer',
-          type: 'raster',
-          source: 'osm-bright',
-          minzoom: 0,
-          maxzoom: 20
-        }
-      ]
+    const onlineLayer = L.tileLayer(
+      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      {
+        subdomains: 'abcd',
+        minZoom: 14,
+        maxZoom: 19,
+        tileSize: 256,
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      }
+    );
+
+    const offlineLayer = L.tileLayer('/tile/{z}/{x}/{y}.webp', {
+      minZoom: 14,
+      maxZoom: 17,
+      maxNativeZoom: 17,
+      tileSize: 256,
+      noWrap: true,
+      bounds: [[44.524421222188643, 18.641298698973824], [44.545400280789757, 18.714732252107076]],
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    });
+
+    let onlineLoaded = false;
+    let usingOfflineLayer = false;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const switchToOfflineLayer = () => {
+      if (usingOfflineLayer) return;
+      usingOfflineLayer = true;
+      if (map.hasLayer(onlineLayer)) {
+        map.removeLayer(onlineLayer);
+      }
+      offlineLayer.addTo(map);
     };
 
-    const map = new maplibregl.Map({
-      container: mapContainerRef.current,
-      style: primaryStyleUrl,
-      center: defaultCenter,
-      zoom: 15,
-      minZoom: 10,
-      maxZoom: 19,
-      pitchWithRotate: true,
-      dragRotate: true,
-    });
+    const scheduleOfflineFallback = () => {
+      if (timeoutId || usingOfflineLayer) return;
+      timeoutId = setTimeout(() => {
+        timeoutId = null;
+        if (!onlineLoaded || !navigator.onLine) {
+          console.warn('Carto raster tiles unavailable for 10s. Switching to local offline tiles.');
+          switchToOfflineLayer();
+        }
+      }, 10000);
+    };
 
-    mapInstanceRef.current = map;
-    setMapInstance(map);
-
-    // Right-click toggles 3D perspective view
-    map.getCanvas().addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-      setIs3D(prev => !prev);
-    });
-
-    // If the primary Geoapify style fails (e.g., network issues), fall back to raster tiles
-    map.on('error', (e) => {
-      if (e.error && e.error.message && e.error.message.toLowerCase().includes('style')) {
-        console.warn('Primary style failed to load. Switching to fallback raster tiles.');
-        map.setStyle(fallbackStyle);
+    onlineLayer.on('load', () => {
+      onlineLoaded = true;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
       }
     });
 
-    map.on('load', () => {
-      map.addSource('buildings', {
-        type: 'geojson',
-        data: '/buildings.geojson'
-      });
+    onlineLayer.addTo(map);
 
-      map.addLayer({
-        id: 'buildings-layer',
-        type: 'fill',
-        source: 'buildings',
-        paint: {
-          'fill-color': '#bcb8b3',
-          'fill-opacity': 0.8
-        }
-      });
+    scheduleOfflineFallback();
+    window.addEventListener('offline', scheduleOfflineFallback);
 
-      map.addSource('route', {
-        type: 'geojson',
-        data: {
-          type: 'Feature',
-          properties: {},
-          geometry: {
-            type: 'LineString',
-            coordinates: []
-          }
-        }
-      });
-
-      map.addLayer({
-        id: 'route-layer',
-        type: 'line',
-        source: 'route',
-        layout: {
-          'line-join': 'round',
-          'line-cap': 'round'
-        },
-        paint: {
-          'line-color': '#3B82F6',
-          'line-width': 6,
-          'line-opacity': 0.9
-        }
-      });
-
-      map.addSource('zone-polygons', {
-        type: 'geojson',
-        data: {
-          type: 'FeatureCollection',
-          features: []
-        }
-      });
-
-      map.addLayer({
-        id: 'zone-polygons-fill',
-        type: 'fill',
-        source: 'zone-polygons',
-        paint: {
-          'fill-color': ['get', 'color'],
-          'fill-opacity': ['get', 'opacity']
-        }
-      });
-
-      map.addLayer({
-        id: 'zone-polygons-line',
-        type: 'line',
-        source: 'zone-polygons',
-        paint: {
-          'line-color': ['get', 'color'],
-          'line-width': 2,
-          'line-dasharray': [4, 4]
-        }
-      });
-    });
-
+    mapRef.current = map;
     return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      window.removeEventListener('offline', scheduleOfflineFallback);
       map.remove();
-      mapInstanceRef.current = null;
+      mapRef.current = null;
     };
   }, []);
 
+  // Zone 0 red polygon (shown for zone 0 or all)
   useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map || !map.isStyleLoaded()) return;
+    const map = mapRef.current;
+    if (!map) return;
 
-    try {
-      const features: any[] = [];
-      if (filterZone === 'all' || filterZone === '0') {
-        const coords = TUZLA_PARKING_ZONE_POLYGON.polygons[0].map(pt => [pt[1], pt[0]]);
-        features.push({
-          type: 'Feature',
-          properties: {
-            color: TUZLA_PARKING_ZONE_POLYGON.color,
-            opacity: filterZone === '0' ? 0.45 : 0.25
-          },
-          geometry: {
-            type: 'Polygon',
-            coordinates: [coords]
-          }
-        });
-      }
+    if ((map as any)._zoneLayer) {
+      map.removeLayer((map as any)._zoneLayer);
+      (map as any)._zoneLayer = null;
+    }
 
-      const source = map.getSource('zone-polygons') as maplibregl.GeoJSONSource;
-      if (source) {
-        source.setData({
-          type: 'FeatureCollection',
-          features
-        });
-      }
-    } catch (e) {
-      console.warn('Error drawing parking zone polygons', e);
+    if (filterZone === 'all' || filterZone === '0') {
+      const rawCoords = TUZLA_PARKING_ZONE_POLYGON.polygons;
+      const leafletCoords = rawCoords
+        .filter(p => Array.isArray(p) && p.length >= 2 && !isNaN(p[0]) && !isNaN(p[1]))
+        .map(p => [p[1], p[0]] as [number, number]); // Leaflet expects [lat, lng]
+
+      const poly = L.polygon(leafletCoords, {
+        color: TUZLA_PARKING_ZONE_POLYGON.color,
+        fillColor: TUZLA_PARKING_ZONE_POLYGON.fillColor || TUZLA_PARKING_ZONE_POLYGON.color,
+        fillOpacity: 0.25,
+        weight: 2,
+      }).addTo(map);
+
+      (map as any)._zoneLayer = poly;
     }
   }, [filterZone]);
 
+  // Parking markers
   useEffect(() => {
-    const map = mapInstanceRef.current;
+    const map = mapRef.current;
     if (!map) return;
-
-    Object.values(markersRef.current).forEach((m) => (m as maplibregl.Marker).remove());
+    // Clear existing markers
+    Object.values(markersRef.current).forEach(m => m.remove());
     markersRef.current = {};
-
-    const filteredLots = parkingLots.filter(
-      (lot) => filterZone === 'all' || lot.zone === filterZone
-    );
-
-    filteredLots.forEach((lot) => {
-      const lat = Number(lot.coordinates?.[0]);
-      const lng = Number(lot.coordinates?.[1]);
-      if (isNaN(lat) || isNaN(lng)) return;
+    const filtered = parkingLots.filter(lot => filterZone === 'all' || lot.zone === filterZone);
+    filtered.forEach(lot => {
+      // coordinates in parkingData are [lng, lat] (e.g., [18.67, 44.53])
+      const lng = Number(lot.coordinates?.[0]);
+      const lat = Number(lot.coordinates?.[1]);
+      if (isNaN(lng) || isNaN(lat)) return;
 
       const details = ZONE_DETAILS[lot.zone];
       const isSelected = selectedLot?.id === lot.id;
+      const div = document.createElement('div');
+      div.className = `relative cursor-pointer ${isSelected ? 'z-50' : 'z-10'}`;
+      div.innerHTML = `<div class="flex flex-col items-center"><div class="w-8 h-8 rounded-full bg-[#08182e] border-2 flex items-center justify-center" style="border-color:${details.color}"><span class="text-[11px] font-black text-[#d4af37]">Z${lot.zone}</span></div></div>`;
 
-      const el = document.createElement('div');
-      el.className = 'custom-map-pin';
-      el.innerHTML = `
-        <div class="relative group cursor-pointer transform transition-all duration-200 hover:scale-110 ${isSelected ? 'scale-125 z-50' : 'z-10'}">
-          <div class="w-8 h-8 rounded-lg bg-[#1a2a44] border-2 flex items-center justify-center shadow-lg" style="border-color: ${details.color}">
-            <span class="text-[11px] font-black text-[#d4af37]">Z${lot.zone}</span>
-          </div>
-          ${isSelected ? `<div class="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-[#d4af37] border-2 border-[#0a1128] animate-ping"></div>` : ''}
-          <div class="w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[7px] mx-auto -mt-0.5" style="border-t-color: ${details.color}"></div>
-        </div>
-      `;
-
-      const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
-        .setLngLat([lng, lat])
-        .addTo(map);
-
+      const icon = L.divIcon({ className: '', html: div.outerHTML, iconSize: [32, 32], iconAnchor: [16, 32] });
+      const marker = L.marker([lat, lng], { icon }).addTo(map);
+      
       const popupHtml = `
-        <div class="p-3 bg-[#1a2a44] text-slate-100 font-sans min-w-[220px] max-w-[260px]">
-          <div class="flex items-center justify-between mb-1">
-            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider text-[#0a1128]" style="background-color: ${details.color}">
+        <div class="p-3.5 bg-gradient-to-br from-[#091d42] via-[#06142e] to-[#030914] text-white rounded-2xl border border-[#d4af37]/40 shadow-2xl min-w-[210px] max-w-[260px]">
+          <div class="flex items-center justify-between gap-2 mb-1">
+            <span class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-[#d4af37]/20 text-[#f5d77f] border border-[#d4af37]/40">
               Zona ${lot.zone}
             </span>
-            <span class="text-xs font-black text-[#d4af37]">${lot.hourlyPrice.toFixed(1)} KM/h</span>
+            ${lot.capacity ? `<span class="text-[11px] font-mono text-slate-300 font-semibold">${lot.capacity} mj.</span>` : ''}
           </div>
-          <h3 class="font-bold text-sm text-white mb-0.5">${lot.name}</h3>
-          <p class="text-[11px] text-slate-300 mb-2">${lot.address}</p>
-          <div class="flex gap-1.5 mt-2">
-            <button id="pop-sms-${lot.id}" class="flex-1 py-1.5 px-2 rounded-md bg-[#d4af37] hover:bg-[#b8860b] text-[#0a1128] text-[11px] font-bold text-center transition-colors">
-              💬 Plati SMS
+          <h3 class="font-black text-sm sm:text-base text-white leading-tight mb-0.5 truncate">${lot.name}</h3>
+          <p class="text-[11px] text-slate-300 mb-3 truncate leading-snug">${lot.address}</p>
+          
+          <div class="flex gap-2">
+            <button 
+              id="sms-${lot.id}" 
+              class="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3e5ab] to-[#b8860b] text-[#030914] font-black text-xs border border-[#ffe58f] shadow-md hover:brightness-110 active:scale-95 active:bg-[#030914] active:text-[#f3e5ab] active:border-[#d4af37] transition-all"
+            >
+              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9 11H7V9h2v2zm4 0h-2V9h2v2zm4 0h-2V9h2v2z"/></svg>
+              <span>SMS</span>
             </button>
-            <button id="pop-nav-${lot.id}" class="flex-1 py-1.5 px-2 rounded-md bg-[#0a1128] hover:bg-slate-800 border border-slate-700 text-slate-100 text-[11px] font-bold text-center transition-colors">
-              🧭 Navigacija
+            <button 
+              id="nav-${lot.id}" 
+              class="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-xl bg-gradient-to-r from-[#1d4ed8] to-[#1e3a8a] text-white font-bold text-xs border border-[#60a5fa]/40 shadow-md hover:brightness-125 active:scale-95 active:bg-[#d4af37] active:text-[#030914] transition-all"
+            >
+              <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z"/></svg>
+              <span>GPS</span>
             </button>
           </div>
         </div>
       `;
-
-      const popup = new maplibregl.Popup({ offset: 25, closeButton: true })
-        .setHTML(popupHtml);
-
-      popup.on('open', () => {
-        const smsBtn = document.getElementById(`pop-sms-${lot.id}`);
-        const navBtn = document.getElementById(`pop-nav-${lot.id}`);
-
-        if (smsBtn) {
-          smsBtn.onclick = (ev) => {
-            ev.preventDefault();
-            ev.stopPropagation();
-            onPaySms(lot);
-          };
-        }
+      
+      marker.bindPopup(popupHtml);
+      marker.on('popupopen', () => {
+        const smsBtn = document.getElementById(`sms-${lot.id}`);
+        const navBtn = document.getElementById(`nav-${lot.id}`);
+        if (smsBtn) smsBtn.onclick = e => { e.stopPropagation(); onPaySms(lot); };
         if (navBtn) {
-          navBtn.onclick = (ev) => {
-            ev.preventDefault();
-            ev.stopPropagation();
+          navBtn.onclick = async e => {
+            e.stopPropagation();
+            await onRequestUserLocation();
             onStartNavigation(lot);
           };
         }
       });
-
-      marker.setPopup(popup);
-
-      el.addEventListener('click', () => {
-        onSelectLot(lot);
-      });
-
+      marker.on('click', () => { onSelectLot(lot); });
       markersRef.current[lot.id] = marker;
     });
-  }, [parkingLots, filterZone, selectedLot]);
+  }, [parkingLots, filterZone, selectedLot, onPaySms, onStartNavigation, onRequestUserLocation]);
 
+  // Highlight selected lot and fly to it (only if no active navigation route)
   useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map || !selectedLot) return;
-
-    const lat = Number(selectedLot.coordinates?.[0]);
-    const lng = Number(selectedLot.coordinates?.[1]);
-    if (isNaN(lat) || isNaN(lng)) return;
-
-    map.flyTo({
-      center: [lng, lat],
-      zoom: 17,
-      speed: 1.2
-    });
-
+    if (!selectedLot || activeRoute) return;
     const marker = markersRef.current[selectedLot.id];
     if (marker) {
-      marker.togglePopup();
+      marker.openPopup();
+      // coordinates are [lng, lat]
+      const lng = Number(selectedLot.coordinates?.[0]);
+      const lat = Number(selectedLot.coordinates?.[1]);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        mapRef.current?.flyTo([lat, lng], 17);
+      }
     }
-  }, [selectedLot]);
+  }, [selectedLot, activeRoute]);
 
+  // User location marker
   useEffect(() => {
-    const map = mapInstanceRef.current;
+    const map = mapRef.current;
     if (!map) return;
-
     if (userMarkerRef.current) {
       userMarkerRef.current.remove();
       userMarkerRef.current = null;
     }
-
     if (userLocation && !isNaN(userLocation.lat) && !isNaN(userLocation.lng)) {
       const el = document.createElement('div');
       el.className = 'w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-md';
-
-      const userMarker = new maplibregl.Marker({ element: el })
-        .setLngLat([userLocation.lng, userLocation.lat])
-        .addTo(map);
-
-      userMarkerRef.current = userMarker;
+      const icon = L.divIcon({ className: '', html: el.outerHTML, iconSize: [16, 16], iconAnchor: [8, 8] });
+      const marker = L.marker([userLocation.lat, userLocation.lng], { icon }).addTo(map);
+      userMarkerRef.current = marker;
     }
   }, [userLocation]);
 
-  // Toggle 3D perspective when is3D changes
+  // Route polyline
   useEffect(() => {
-    const map = mapInstanceRef.current;
+    const map = mapRef.current;
     if (!map) return;
-    map.easeTo({
-      pitch: is3D ? 60 : 0,
-      bearing: is3D ? -30 : 0,
-      duration: 800
-    });
-  }, [is3D]);
-
-  // Update route line - waits for source to be available
-  useEffect(() => {
-    const map = mapInstanceRef.current;
-    if (!map) return;
-
-    const updateRoute = () => {
-      const source = map.getSource('route') as maplibregl.GeoJSONSource;
-      if (!source) return;
-
-      if (activeRoute && Array.isArray(activeRoute.coordinates) && activeRoute.coordinates.length > 0) {
-        const validCoords = activeRoute.coordinates
-          .filter(c => Array.isArray(c) && c.length >= 2 && !isNaN(c[0]) && !isNaN(c[1]))
-          .map(c => [c[1], c[0]] as [number, number]);
-
-        if (validCoords.length > 0) {
-          source.setData({
-            type: 'Feature',
-            properties: {},
-            geometry: {
-              type: 'LineString',
-              coordinates: validCoords
-            }
-          });
-          const bounds = new maplibregl.LngLatBounds(validCoords[0], validCoords[0]);
-          validCoords.forEach(coord => bounds.extend(coord));
-          map.fitBounds(bounds, { padding: 50 });
-        }
-      } else {
-        source.setData({
-          type: 'Feature',
-          properties: {},
-          geometry: { type: 'LineString', coordinates: [] }
-        });
-      }
-    };
-
-    // If the source exists already, update immediately
-    if (map.getSource('route')) {
-      updateRoute();
-    } else {
-      // Source not yet added (style still loading) - wait for it
-      map.once('load', updateRoute);
+    if (routeRef.current) {
+      map.removeLayer(routeRef.current);
+      routeRef.current = null;
+    }
+    if (activeRoute?.coordinates?.length) {
+      const coords = activeRoute.coordinates
+        .filter(c => Array.isArray(c) && c.length >= 2 && !isNaN(c[0]) && !isNaN(c[1]))
+        .map(c => [c[1], c[0]] as [number, number]); // [lat, lng]
+      const poly = L.polyline(coords, {
+        color: '#d4af37',
+        weight: 5,
+        opacity: 0.92,
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(map);
+      routeRef.current = poly;
+      map.fitBounds(poly.getBounds(), { padding: [50, 50] });
     }
   }, [activeRoute]);
 
   return (
-    <div className="relative w-full h-[calc(100vh-120px)] sm:h-[calc(100vh-140px)] overflow-hidden bg-slate-950" onContextMenu={(e) => e.preventDefault()}>
-      <div ref={mapContainerRef} className="w-full h-full z-0" />
-      <OfflineMapController map={mapInstance} />
-
-      <div className="absolute top-3 left-3 right-3 z-20 flex items-center justify-between pointer-events-none">
-        <div className="pointer-events-auto flex items-center gap-1 bg-[#061d40]/95 backdrop-blur-md p-1 rounded-full border border-[#d4af37]/40 shadow-xl">
+    <div className="relative w-full h-full bg-[#040a17]" onContextMenu={e => e.preventDefault()}>
+      <div ref={mapContainerRef} className="w-full h-full" />
+      {/* Locate button */}
+      <button
+        onClick={onRequestUserLocation}
+        className="absolute bottom-6 left-3 w-12 h-12 rounded-full bg-gradient-to-br from-[#ffd86b] via-[#d4af37] to-[#8f6a13] text-[#041530] flex items-center justify-center shadow-[0_0_0_1px_rgba(255,229,143,0.4),0_12px_30px_rgba(0,0,0,0.45),0_0_20px_rgba(212,175,55,0.35)] hover:brightness-110 transition-transform active:scale-95 border border-[#fff0a8]/50"
+        title={t.parkingList.locateClosest}
+      >
+        <Locate className="w-6 h-6 animate-pulse" />
+      </button>
+      {/* Zone filter bar */}
+      <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+        <div className="pointer-events-auto flex gap-1 bg-[#061d40]/95 backdrop-blur-md p-1 rounded-full border border-[#d4af37]/40 shadow-[0_0_0_1px_rgba(255,229,143,0.08),0_10px_30px_rgba(0,0,0,0.35)]">
           <button
             onClick={() => onFilterZoneChange('all')}
-            className={`px-1.5 py-0.5 rounded-full text-xs font-bold transition-all ${filterZone === 'all'
-              ? 'bg-[#d4af37] text-[#041530] shadow-sm font-extrabold'
-              : 'text-slate-300 hover:text-white'}`}
-          >
-            Sve
-          </button>
+            className={`px-2 py-1 rounded-full text-xs font-bold transition-all ${filterZone === 'all' ? 'bg-gradient-to-r from-[#1d4ed8] via-[#1e3a8a] to-[#08153b] text-white border border-[#d4af37]/50 shadow-[0_0_18px_rgba(29,78,216,0.35)]' : 'text-slate-300 hover:text-white'}`}
+          >Sve</button>
           <button
             onClick={() => onFilterZoneChange('0')}
-            className={`px-1.5 py-0.5 rounded-full text-xs font-bold border transition-all ${filterZone === '0'
-              ? 'bg-red-500 text-white border-red-400 shadow-sm font-extrabold'
-              : 'bg-[#041530] border-red-500/40 text-red-400'}`}
-          >
-            Z0
-          </button>
-          <button
-            onClick={() => onFilterZoneChange('1')}
-            className={`px-1.5 py-0.5 rounded-full text-xs font-bold border transition-all ${filterZone === '1'
-              ? 'bg-sky-500 text-white border-sky-400 shadow-sm font-extrabold'
-              : 'bg-[#041530] border-sky-500/40 text-sky-400'}`}
-          >
-            Z1
-          </button>
-          <button
-            onClick={() => onFilterZoneChange('2')}
-            className={`px-1.5 py-0.5 rounded-full text-xs font-bold border transition-all ${filterZone === '2'
-              ? 'bg-emerald-500 text-white border-emerald-400 shadow-sm font-extrabold'
-              : 'bg-[#041530] border-emerald-500/40 text-emerald-400'}`}
-          >
-            Z2
-          </button>
-        </div>
-      </div>
-
-      <div className="absolute bottom-6 right-3 z-20 flex flex-col gap-2">
-        <button
-          onClick={onRequestUserLocation}
-          className="w-12 h-12 rounded-full bg-[#d4af37] text-[#041530] flex items-center justify-center shadow-2xl hover:bg-[#b8860b] transition-transform active:scale-95 border border-[#d4af37]/50"
-          title={t.parkingList.locateClosest}
-        >
-          <Locate className="w-6 h-6 animate-pulse" />
-        </button>
-      </div>
-
-      <div className="absolute bottom-6 left-3 z-20 pointer-events-auto">
-        <div className="bg-[#061d40]/95 backdrop-blur-md px-3 py-1.5 rounded-lg border border-[#d4af37]/30 text-[11px] text-slate-200 flex items-center gap-2 shadow-lg">
-          <span className="w-3 h-3 rounded-full bg-red-500/80 border border-white inline-block"></span>
-          <span className="font-semibold text-slate-200">Pannonica / Kojšino Zona 0</span>
+            className={`px-2 py-1 rounded-full border transition-all ${filterZone === '0' ? 'bg-gradient-to-r from-[#1d4ed8] via-[#1e3a8a] to-[#08153b] text-white border-[#d4af37]/60 shadow-[0_0_18px_rgba(212,175,55,0.22)]' : 'bg-[#041530] border-[#d4af37]/30 text-[#ffd77a]'}`}
+          >Z0</button>
         </div>
       </div>
     </div>

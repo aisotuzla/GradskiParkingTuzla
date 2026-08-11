@@ -98,7 +98,7 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ currentLang }) =
           </div>
           <div>
             <h3 className="font-bold text-sm text-[#d4af37] uppercase tracking-wide">Cjenovnik & Brojevi Zona</h3>
-            <p className="text-[11px] text-slate-300">JKP Saobraćaj i komunikacije Tuzla</p>
+            <p className="text-[11px] text-slate-300">Javni Gradski Parking Tuzla</p>
           </div>
         </div>
 

@@ -107,24 +107,24 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-md bg-[#041530] border border-[#d4af37]/30 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 shadow-2xl text-slate-100 max-h-[90vh] overflow-y-auto custom-scrollbar">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in font-sans">
+      <div className="w-full max-w-md bg-gradient-to-b from-[#0b1e4f] via-[#09183d] to-[#040e26] border border-[#d4af37]/50 rounded-t-3xl sm:rounded-2xl p-5 sm:p-6 shadow-2xl text-white max-h-[90vh] overflow-y-auto custom-scrollbar">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-700/50 pb-3 mb-4">
+        <div className="flex items-center justify-between border-b border-[#d4af37]/30 pb-3 mb-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#d4af37] text-[#041530] flex items-center justify-center font-extrabold shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#ffd700] via-[#d4af37] to-[#9a7b1c] text-[#040e26] flex items-center justify-center font-extrabold shadow-lg shadow-[#d4af37]/20 border border-[#fff5c0]/50">
               <MessageSquare className="w-5 h-5 fill-current" />
             </div>
             <div>
-              <h2 className="font-bold text-base text-[#d4af37] uppercase tracking-wide">{t.smsPayment.title}</h2>
+              <h2 className="font-heading font-black text-lg gold-gradient-text uppercase tracking-wide leading-tight">{t.smsPayment.title}</h2>
               {selectedLot && (
-                <p className="text-xs text-slate-300 font-medium">{selectedLot.name}</p>
+                <p className="text-xs text-slate-200 font-semibold">{selectedLot.name}</p>
               )}
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full bg-[#08224d] text-slate-400 hover:text-white transition-colors border border-slate-700/50"
+            className="p-1.5 rounded-full bg-[#0b1a45] text-slate-300 hover:text-white transition-colors border border-slate-700/50"
           >
             <X className="w-5 h-5" />
           </button>
@@ -132,8 +132,8 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
 
         {/* Working Hours Alert Banner */}
         {!workingHours && (
-          <div className="mb-4 p-3 rounded-lg bg-[#08224d] border border-[#d4af37]/20 text-slate-300 text-xs flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0 text-[#d4af37]" />
+          <div className="mb-4 p-3 rounded-xl bg-[#0b1a45] border border-[#d4af37]/40 text-slate-200 text-xs flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-[#ffd700]" />
             <span>{t.workingHours.freeText}</span>
           </div>
         )}

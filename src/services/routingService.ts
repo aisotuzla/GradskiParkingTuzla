@@ -1,7 +1,10 @@
 import { NavigationRoute, ParkingLotData, RouteStep, UserLocation } from '../types';
 import { TUZLA_OFFLINE_ROAD_NODES } from '../data/parkingData';
 
-export const GEOAPIFY_API_KEY = '4b59ef066c8947618d81a98bc78622ab';
+const GEOAPIFY_API_KEY =
+  import.meta.env.VITE_GEOAPIFY_ROUTING_API ||
+  import.meta.env.VITE_GEOAPIFY_API_KEY ||
+  '';
 
 // Haversine distance in meters
 export function calculateDistanceMeters(
@@ -53,19 +56,19 @@ export async function calculateRoute(
   startLoc: UserLocation,
   targetLot: ParkingLotData
 ): Promise<NavigationRoute> {
-  const safeStartLat = typeof startLoc?.lat === 'number' && !isNaN(startLoc.lat) ? startLoc.lat : 44.538;
-  const safeStartLng = typeof startLoc?.lng === 'number' && !isNaN(startLoc.lng) ? startLoc.lng : 18.675;
-  const rawDestLng = targetLot?.coordinates?.[1];
-  const rawDestLat = targetLot?.coordinates?.[0];
-  const destLat = typeof rawDestLat === 'number' && !isNaN(rawDestLat) ? rawDestLat : 44.538;
-  const destLng = typeof rawDestLng === 'number' && !isNaN(rawDestLng) ? rawDestLng : 18.675;
+  const safeStartLat = typeof startLoc?.lat === 'number' && !isNaN(startLoc.lat) && isFinite(startLoc.lat) ? startLoc.lat : 44.5385;
+  const safeStartLng = typeof startLoc?.lng === 'number' && !isNaN(startLoc.lng) && isFinite(startLoc.lng) ? startLoc.lng : 18.6770;
+  const rawDestLng = Number(targetLot?.coordinates?.[0]);
+  const rawDestLat = Number(targetLot?.coordinates?.[1]);
+  const destLat = typeof rawDestLat === 'number' && !isNaN(rawDestLat) && isFinite(rawDestLat) ? rawDestLat : 44.5385;
+  const destLng = typeof rawDestLng === 'number' && !isNaN(rawDestLng) && isFinite(rawDestLng) ? rawDestLng : 18.6770;
 
   const safeStartLoc: UserLocation = { ...startLoc, lat: safeStartLat, lng: safeStartLng };
   const isOnline = navigator.onLine;
 
   if (isOnline) {
     try {
-      const url = `https://api.geoapify.com/v1/routing?waypoints=${safeStartLat},${safeStartLng}|${destLat},${destLng}&mode=drive&apiKey=${GEOAPIFY_API_KEY}`;
+      const url = `https://api.geoapify.com/v1/routing?waypoints=${safeStartLat},${safeStartLng}|${destLat},${destLng}&mode=drive&type=short&apiKey=${GEOAPIFY_API_KEY}`;
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 4000);
       const response = await fetch(url, { signal: controller.signal });
@@ -78,10 +81,28 @@ export async function calculateRoute(
           const properties = feature.properties;
           const geometry = feature.geometry;
 
-          // Convert GeoJSON [lng, lat] coordinates to MapLibre [lat, lng]
-          const coords: [number, number][] = (geometry.coordinates[0] || [])
-            .map((c: number[]) => [Number(c[1]), Number(c[0])] as [number, number])
-            .filter((c: [number, number]) => typeof c[0] === 'number' && typeof c[1] === 'number' && !isNaN(c[0]) && !isNaN(c[1]));
+          // Safely extract coordinates from GeoJSON LineString or MultiLineString
+          let rawPoints: any[] = [];
+          if (Array.isArray(geometry.coordinates)) {
+            if (Array.isArray(geometry.coordinates[0]) && Array.isArray(geometry.coordinates[0][0])) {
+              // MultiLineString
+              rawPoints = geometry.coordinates.flat(1);
+            } else if (Array.isArray(geometry.coordinates[0])) {
+              // LineString
+              rawPoints = geometry.coordinates;
+            }
+          }
+
+          // Convert GeoJSON [lng, lat] coordinates to Leaflet [lat, lng]
+          const coords: [number, number][] = rawPoints
+            .map((c: any) => {
+              if (!Array.isArray(c) || c.length < 2) return null;
+              const lat = Number(c[1]);
+              const lng = Number(c[0]);
+              if (isNaN(lat) || isNaN(lng) || !isFinite(lat) || !isFinite(lng)) return null;
+              return [lat, lng] as [number, number];
+            })
+            .filter((c): c is [number, number] => c !== null);
 
           const steps: RouteStep[] = [];
           if (properties.legs && properties.legs[0] && properties.legs[0].steps) {
@@ -149,12 +170,12 @@ export function generateOfflineRoute(
   startLoc: UserLocation,
   targetLot: ParkingLotData
 ): NavigationRoute {
-  const safeStartLat = typeof startLoc?.lat === 'number' && !isNaN(startLoc.lat) ? startLoc.lat : 44.538;
-  const safeStartLng = typeof startLoc?.lng === 'number' && !isNaN(startLoc.lng) ? startLoc.lng : 18.675;
-  const rawDestLng = targetLot?.coordinates?.[1];
-  const rawDestLat = targetLot?.coordinates?.[0];
-  const destLat = typeof rawDestLat === 'number' && !isNaN(rawDestLat) ? rawDestLat : 44.538;
-  const destLng = typeof rawDestLng === 'number' && !isNaN(rawDestLng) ? rawDestLng : 18.675;
+  const safeStartLat = typeof startLoc?.lat === 'number' && !isNaN(startLoc.lat) ? startLoc.lat : 44.5385;
+  const safeStartLng = typeof startLoc?.lng === 'number' && !isNaN(startLoc.lng) ? startLoc.lng : 18.6770;
+  const rawDestLng = targetLot?.coordinates?.[0];
+  const rawDestLat = targetLot?.coordinates?.[1];
+  const destLat = typeof rawDestLat === 'number' && !isNaN(rawDestLat) ? rawDestLat : 44.5385;
+  const destLng = typeof rawDestLng === 'number' && !isNaN(rawDestLng) ? rawDestLng : 18.6770;
 
   // Check if we have a cached route in localStorage first
   try {

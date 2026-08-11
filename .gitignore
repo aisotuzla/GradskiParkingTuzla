@@ -6,3 +6,7 @@ coverage/
 *.log
 .env*
 !.env.example
+*.mbtiles
+*.pmtiles
+*.aux.xml
+public/tile/*
