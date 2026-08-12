@@ -1,10 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Locate, MessageSquare, Navigation, ZoomIn, ZoomOut } from 'lucide-react';
+import { Map, ZoomIn, ZoomOut } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Language, NavigationRoute, ParkingLotData, ParkingZone, UserLocation } from '../types';
 import { ZONE_DETAILS, TUZLA_PARKING_ZONE_POLYGON } from '../data/parkingData';
-import { TRANSLATIONS } from '../data/translations';
 
 interface MapViewProps {
   parkingLots: ParkingLotData[];
@@ -29,13 +28,15 @@ export const MapView: React.FC<MapViewProps> = ({
   userLocation,
   onRequestUserLocation,
   activeRoute,
-  currentLang,
+  currentLang: _currentLang,
   filterZone,
   onFilterZoneChange,
 }) => {
-  const [actionLot, setActionLot] = useState<ParkingLotData | null>(null);
+  const [mapStyle, setMapStyle] = useState<'online' | 'offline'>('online');
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
+  const onlineLayerRef = useRef<L.TileLayer | null>(null);
+  const offlineLayerRef = useRef<L.TileLayer | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
   const markersRef = useRef<Record<string, L.Marker>>({});
   const routeRef = useRef<L.Polyline | null>(null);
@@ -43,7 +44,6 @@ export const MapView: React.FC<MapViewProps> = ({
   const onPaySmsRef = useRef(onPaySms);
   const onStartNavigationRef = useRef(onStartNavigation);
   const onRequestUserLocationRef = useRef(onRequestUserLocation);
-  const t = TRANSLATIONS[currentLang];
 
   useEffect(() => {
     onSelectLotRef.current = onSelectLot;
@@ -60,13 +60,37 @@ export const MapView: React.FC<MapViewProps> = ({
     mapRef.current?.zoomOut();
   };
 
+  const handleToggleMapStyle = () => {
+    const map = mapRef.current;
+    const onlineLayer = onlineLayerRef.current;
+    const offlineLayer = offlineLayerRef.current;
+    if (!map || !onlineLayer || !offlineLayer) return;
+
+    if (mapStyle === 'online') {
+      if (map.hasLayer(onlineLayer)) map.removeLayer(onlineLayer);
+      if (!map.hasLayer(offlineLayer)) offlineLayer.addTo(map);
+      map.setMinZoom(14);
+      map.setMaxZoom(17);
+      map.setZoom(15);
+      setMapStyle('offline');
+      return;
+    }
+
+    if (map.hasLayer(offlineLayer)) map.removeLayer(offlineLayer);
+    if (!map.hasLayer(onlineLayer)) onlineLayer.addTo(map);
+    map.setMinZoom(3);
+    map.setMaxZoom(20);
+    map.setZoom(14);
+    setMapStyle('online');
+  };
+
   // Initialise Leaflet map with Carto raster tiles, then fall back to local tiles after a real offline delay.
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
     const map = L.map(mapContainerRef.current, {
       center: [44.538, 18.675], // lat, lng
-      zoom: 15,
-      minZoom: 12,
+      zoom: 14,
+      minZoom: 3,
       maxZoom: 20,
       zoomControl: false,
     });
@@ -75,7 +99,7 @@ export const MapView: React.FC<MapViewProps> = ({
       'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
       {
         subdomains: 'abcd',
-        minZoom: 10,
+        minZoom: 3,
         maxZoom: 20,
         tileSize: 256,
         attribution:
@@ -93,6 +117,9 @@ export const MapView: React.FC<MapViewProps> = ({
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     });
 
+    onlineLayerRef.current = onlineLayer;
+    offlineLayerRef.current = offlineLayer;
+
     let onlineLoaded = false;
     let usingOfflineLayer = false;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -104,6 +131,10 @@ export const MapView: React.FC<MapViewProps> = ({
         map.removeLayer(onlineLayer);
       }
       offlineLayer.addTo(map);
+      map.setMinZoom(14);
+      map.setMaxZoom(17);
+      map.setZoom(15);
+      setMapStyle('offline');
     };
 
     const scheduleOfflineFallback = () => {
@@ -136,6 +167,8 @@ export const MapView: React.FC<MapViewProps> = ({
       window.removeEventListener('offline', scheduleOfflineFallback);
       map.remove();
       mapRef.current = null;
+      onlineLayerRef.current = null;
+      offlineLayerRef.current = null;
     };
   }, []);
 
@@ -194,7 +227,25 @@ export const MapView: React.FC<MapViewProps> = ({
             Zona ${lot.zone}
           </span>
           <h3 class="font-black text-sm sm:text-base text-white leading-tight mb-0.5 truncate">${lot.name}</h3>
-          <p class="text-[11px] text-slate-300 truncate leading-snug">${lot.address}</p>
+          <p class="text-[11px] text-slate-300 mb-3 truncate leading-snug">${lot.address}</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              data-map-action="sms"
+              data-lot-id="${lot.id}"
+              class="h-9 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3e5ab] to-[#b8860b] text-[#030914] font-black text-xs border border-[#ffe58f] shadow-md active:scale-95"
+            >
+              SMS
+            </button>
+            <button
+              type="button"
+              data-map-action="gps"
+              data-lot-id="${lot.id}"
+              class="h-9 rounded-xl bg-gradient-to-r from-[#1d4ed8] to-[#1e3a8a] text-white font-black text-xs border border-[#60a5fa]/40 shadow-md active:scale-95"
+            >
+              GPS
+            </button>
+          </div>
         </div>
       `;
       
@@ -205,18 +256,40 @@ export const MapView: React.FC<MapViewProps> = ({
           L.DomEvent.disableClickPropagation(popupElement);
           L.DomEvent.disableScrollPropagation(popupElement);
         }
-        setActionLot(lot);
-      });
-      marker.on('popupclose', () => {
-        setActionLot(current => current?.id === lot.id ? null : current);
       });
       marker.on('click', () => {
         onSelectLotRef.current(lot);
-        setActionLot(lot);
       });
       markersRef.current[lot.id] = marker;
     });
   }, [parkingLots, filterZone]);
+
+  useEffect(() => {
+    const handlePopupAction = async (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      const button = target?.closest<HTMLButtonElement>('[data-map-action][data-lot-id]');
+      if (!button) return;
+
+      const lot = parkingLots.find(item => item.id === button.dataset.lotId);
+      if (!lot) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (button.dataset.mapAction === 'sms') {
+        onPaySmsRef.current(lot);
+        return;
+      }
+
+      if (button.dataset.mapAction === 'gps') {
+        await onRequestUserLocationRef.current();
+        onStartNavigationRef.current(lot);
+      }
+    };
+
+    document.addEventListener('click', handlePopupAction, true);
+    return () => document.removeEventListener('click', handlePopupAction, true);
+  }, [parkingLots]);
 
   // Highlight selected lot and fly to it (only if no active navigation route)
   useEffect(() => {
@@ -275,18 +348,19 @@ export const MapView: React.FC<MapViewProps> = ({
   }, [activeRoute]);
 
   return (
-    <div className="relative w-full h-full bg-[#040a17]" onContextMenu={e => e.preventDefault()}>
-      <div ref={mapContainerRef} className="w-full h-full" />
-      {/* Locate button */}
+    <div className="relative isolate z-0 w-full h-full overflow-hidden bg-[#040a17]" onContextMenu={e => e.preventDefault()}>
+      <div ref={mapContainerRef} className="absolute inset-0 z-0 w-full h-full" />
       <button
-        onClick={onRequestUserLocation}
-        className="absolute bottom-6 left-3 w-12 h-12 rounded-full bg-gradient-to-br from-[#ffd86b] via-[#d4af37] to-[#8f6a13] text-[#041530] flex items-center justify-center shadow-[0_0_0_1px_rgba(255,229,143,0.4),0_12px_30px_rgba(0,0,0,0.45),0_0_20px_rgba(212,175,55,0.35)] hover:brightness-110 transition-transform active:scale-95 border border-[#fff0a8]/50"
-        title={t.parkingList.locateClosest}
+        type="button"
+        onClick={handleToggleMapStyle}
+        className="absolute bottom-6 left-3 z-30 w-11 h-11 rounded-full bg-[#061d40]/95 backdrop-blur-md border border-[#d4af37]/40 text-[#ffd77a] shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex items-center justify-center active:scale-95"
+        aria-label={`Switch to ${mapStyle === 'online' ? 'offline' : 'online'} map style`}
+        title={`Switch to ${mapStyle === 'online' ? 'offline' : 'online'} map style`}
       >
-        <Locate className="w-6 h-6 animate-pulse" />
+        <Map className="w-5 h-5" />
       </button>
       {/* Zone filter bar */}
-      <div className="absolute top-3 left-3 flex items-center justify-start pointer-events-none">
+      <div className="absolute top-3 left-3 z-30 flex items-center justify-start pointer-events-none">
         <div className="pointer-events-auto flex gap-1 bg-[#061d40]/95 backdrop-blur-md p-1 rounded-full border border-[#d4af37]/40 shadow-[0_0_0_1px_rgba(255,229,143,0.08),0_10px_30px_rgba(0,0,0,0.35)]">
           <button
             onClick={() => onFilterZoneChange('all')}
@@ -301,7 +375,7 @@ export const MapView: React.FC<MapViewProps> = ({
           ))}
         </div>
       </div>
-      <div className="absolute top-3 right-3 z-[500] pointer-events-auto flex flex-col gap-1 bg-[#061d40]/95 backdrop-blur-md p-1 rounded-full border border-[#d4af37]/40 shadow-[0_0_0_1px_rgba(255,229,143,0.08),0_10px_30px_rgba(0,0,0,0.35)]">
+      <div className="absolute top-3 right-3 z-30 pointer-events-auto flex flex-col gap-1 bg-[#061d40]/95 backdrop-blur-md p-1 rounded-full border border-[#d4af37]/40 shadow-[0_0_0_1px_rgba(255,229,143,0.08),0_10px_30px_rgba(0,0,0,0.35)]">
         <button
           type="button"
           onClick={handleZoomIn}
@@ -321,36 +395,6 @@ export const MapView: React.FC<MapViewProps> = ({
           <ZoomOut className="w-4 h-4" />
         </button>
       </div>
-      {actionLot && (
-        <div className="absolute left-3 right-3 bottom-20 z-[500] pointer-events-auto rounded-2xl bg-[#061d40]/95 backdrop-blur-md border border-[#d4af37]/40 p-3 shadow-[0_18px_42px_rgba(0,0,0,0.45)]">
-          <div className="mb-2 min-w-0">
-            <div className="text-[10px] font-black uppercase tracking-wider text-[#ffd77a]">Zona {actionLot.zone}</div>
-            <div className="text-sm font-black text-white truncate">{actionLot.name}</div>
-            <div className="text-[11px] text-slate-300 truncate">{actionLot.address}</div>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={() => onPaySmsRef.current(actionLot)}
-              className="h-10 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3e5ab] to-[#b8860b] text-[#030914] font-black text-xs border border-[#ffe58f] shadow-md flex items-center justify-center gap-1.5 active:scale-95"
-            >
-              <MessageSquare className="w-4 h-4 fill-current" />
-              <span>SMS</span>
-            </button>
-            <button
-              type="button"
-              onClick={async () => {
-                await onRequestUserLocationRef.current();
-                onStartNavigationRef.current(actionLot);
-              }}
-              className="h-10 rounded-xl bg-gradient-to-r from-[#1d4ed8] to-[#1e3a8a] text-white font-black text-xs border border-[#60a5fa]/40 shadow-md flex items-center justify-center gap-1.5 active:scale-95"
-            >
-              <Navigation className="w-4 h-4 fill-current" />
-              <span>GPS</span>
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

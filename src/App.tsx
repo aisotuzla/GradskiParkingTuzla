@@ -355,7 +355,10 @@ export default function App() {
 
           {/* List Tab */}
           <button
-            onClick={() => setActiveTab('list')}
+            onClick={() => {
+              setActiveRoute(null);
+              setActiveTab('list');
+            }}
             className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all ${activeTab === 'list'
               ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
               : 'text-slate-400 hover:text-slate-200'
@@ -379,7 +382,10 @@ export default function App() {
 
           {/* Timer Tab */}
           <button
-            onClick={() => setActiveTab('timer')}
+            onClick={() => {
+              setActiveRoute(null);
+              setActiveTab('timer');
+            }}
             className={`relative flex flex-col items-center justify-center py-1 rounded-xl transition-all ${activeTab === 'timer'
               ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
               : 'text-slate-400 hover:text-slate-200'
@@ -394,7 +400,10 @@ export default function App() {
 
           {/* Vehicle Tab */}
           <button
-            onClick={() => setActiveTab('vehicle')}
+            onClick={() => {
+              setActiveRoute(null);
+              setActiveTab('vehicle');
+            }}
             className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all ${activeTab === 'vehicle'
               ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
               : 'text-slate-400 hover:text-slate-200'
