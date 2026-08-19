@@ -1,6 +1,6 @@
-# 🚗 TuzlaPark – Smart Parking & Navigation
+# 🚗 Gradski Parking Tuzla – SMS Parking & Navigation
 
-TuzlaPark is a Progressive Web Application (PWA) that simplifies parking in Tuzla by combining interactive maps, GPS navigation, SMS parking payment, voice commands and offline support into a single mobile-first application.
+Gradski Parking Tuzla is a Progressive Web Application (PWA) that simplifies parking in Tuzla by combining interactive maps, GPS navigation, SMS parking payment, voice commands and offline support into a single mobile-first application.
 
 ---
 
@@ -23,11 +23,6 @@ TuzlaPark is a Progressive Web Application (PWA) that simplifies parking in Tuzl
 - Closest parking finder
 - Offline map fallback
 
-### 🎤 Voice Assistant
-
-- Voice commands
-- Hands-free parking search
-- Navigation control
 
 ### 📱 Progressive Web App
 
@@ -73,53 +68,6 @@ src/
 ```
 
 ---
-
-## Installation
-
-```bash
-npm install
-```
-
-Create
-
-```
-.env.local
-```
-
-```
-GEMINI_API_KEY=YOUR_API_KEY
-```
-
-Run
-
-```bash
-npm run dev
-```
-
----
-
-## Main Functions
-
-✔ SMS Parking Payment
-
-✔ Navigation
-
-✔ Parking Zones
-
-✔ Offline Maps
-
-✔ Voice Assistant
-
-✔ Parking Session Timer
-
-✔ PWA Installation
-
-✔ GPS Position
-
-✔ Route Guidance
-
----
-
 ## License
 
 MIT
@@ -128,7 +76,7 @@ MIT
 
 Made with ❤️ for the City of Tuzla.
 
-# 🚗 TuzlaPark – Pametno Parkiranje i Navigacija
+# 🚗 Gradski Parking Tuzla – SMS Parking & Navigation
 
 TuzlaPark je moderna Progressive Web aplikacija koja omogućava brzo pronalaženje parking mjesta, SMS plaćanje parkinga, navigaciju, glasovne komande i rad bez internet veze.
 
@@ -152,12 +100,6 @@ TuzlaPark je moderna Progressive Web aplikacija koja omogućava brzo pronalažen
 - Navigacija do parking mjesta
 - Najbliži parking
 - Offline mapa
-
-### 🎤 Glasovne komande
-
-- Glasovno upravljanje
-- Pretraga parkinga
-- Pokretanje navigacije
 
 ### 📱 PWA
 
@@ -184,32 +126,6 @@ TuzlaPark je moderna Progressive Web aplikacija koja omogućava brzo pronalažen
 - Tailwind CSS
 - Lucide Icons
 - Service Worker
-
----
-
-## Instalacija
-
-```bash
-npm install
-```
-
-Kreirati
-
-```
-.env.local
-```
-
-```
-GEMINI_API_KEY=YOUR_API_KEY
-```
-
-Pokretanje
-
-```bash
-npm run dev
-```
-
----
 
 ## Glavne mogućnosti
 
