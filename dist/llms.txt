@@ -1,6 +1,6 @@
-# Parking Tuzla
+# TuzlaPark
 
-Name: Parking Tuzla
+Name: TuzlaPark
 
 Type: Progressive Web Application
 

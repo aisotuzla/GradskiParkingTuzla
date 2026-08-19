@@ -322,7 +322,7 @@ export default function App() {
                     </div>
                   </div>
                   <button
-                    onClick={() => handleOpenSmsPay(selectedLot || TUZLA_PARKING_DATA[0])}
+                    onClick={() => handleOpenSmsPay(selectedLot || undefined)}
                     className="w-full py-3.5 px-4 rounded-lg bg-[#d4af37] text-[#0a1128] font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:bg-[#b8860b] active:scale-95 transition-all"
                   >
                     <MessageSquare className="w-5 h-5 fill-current" />

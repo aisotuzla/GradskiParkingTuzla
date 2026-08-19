@@ -331,7 +331,7 @@ export const MapView: React.FC<MapViewProps> = ({
       const lng = Number(selectedLot.coordinates?.[0]);
       const lat = Number(selectedLot.coordinates?.[1]);
       if (!isNaN(lat) && !isNaN(lng)) {
-        mapRef.current?.flyTo([lat, lng], 17);
+        mapRef.current?.flyTo([lat, lng], 15);
       }
     }
   }, [selectedLot, activeRoute]);
@@ -383,11 +383,11 @@ export const MapView: React.FC<MapViewProps> = ({
       <button
         type="button"
         onClick={handleToggleMapStyle}
-        className="absolute bottom-6 left-3 z-30 w-11 h-11 rounded-full bg-[#061d40]/95 backdrop-blur-md border border-[#d4af37]/40 text-[#ffd77a] shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex items-center justify-center active:scale-95"
+        className="absolute bottom-6 left-3 z-30 w-9 h-9 rounded-full bg-[#061d40]/95 backdrop-blur-md border border-[#d4af37]/40 text-[#ffd77a] shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex items-center justify-center active:scale-95"
         aria-label={`Switch to ${mapStyle === 'online' ? 'offline' : 'online'} map style`}
         title={`Switch to ${mapStyle === 'online' ? 'offline' : 'online'} map style`}
       >
-        <Map className="w-5 h-5" />
+        <Map className="w-4 h-4" />
       </button>
       {/* Zone filter bar */}
       <div className="absolute top-3 left-3 z-30 flex items-center justify-start pointer-events-none">
@@ -405,24 +405,24 @@ export const MapView: React.FC<MapViewProps> = ({
           ))}
         </div>
       </div>
-      <div className="absolute top-3 right-3 z-30 pointer-events-auto flex flex-col gap-1 bg-[#061d40]/95 backdrop-blur-md p-1 rounded-full border border-[#d4af37]/40 shadow-[0_0_0_1px_rgba(255,229,143,0.08),0_10px_30px_rgba(0,0,0,0.35)]">
+      <div className="absolute top-3 right-3 z-30 pointer-events-auto flex flex-col gap-1 bg-[#061d40]/95 backdrop-blur-md p-0.5 rounded-full border border-[#d4af37]/40 shadow-[0_0_0_1px_rgba(255,229,143,0.08),0_10px_30px_rgba(0,0,0,0.35)]">
         <button
           type="button"
           onClick={handleZoomIn}
-          className="w-8 h-8 rounded-full bg-[#041530] border border-[#d4af37]/30 text-[#d4af37] flex items-center justify-center hover:bg-[#062844] transition-colors active:scale-95"
+          className="w-7 h-7 rounded-full bg-[#041530] border border-[#d4af37]/30 text-[#d4af37] flex items-center justify-center hover:bg-[#062844] transition-colors active:scale-95"
           aria-label="Zoom in"
           title="Zoom in"
         >
-          <ZoomIn className="w-4 h-4" />
+          <ZoomIn className="w-3.5 h-3.5" />
         </button>
         <button
           type="button"
           onClick={handleZoomOut}
-          className="w-8 h-8 rounded-full bg-[#041530] border border-[#d4af37]/30 text-[#d4af37] flex items-center justify-center hover:bg-[#062844] transition-colors active:scale-95"
+          className="w-7 h-7 rounded-full bg-[#041530] border border-[#d4af37]/30 text-[#d4af37] flex items-center justify-center hover:bg-[#062844] transition-colors active:scale-95"
           aria-label="Zoom out"
           title="Zoom out"
         >
-          <ZoomOut className="w-4 h-4" />
+          <ZoomOut className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>

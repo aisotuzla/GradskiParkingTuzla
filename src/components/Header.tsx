@@ -40,29 +40,33 @@ export const Header: React.FC<HeaderProps> = ({
             <Car className="w-5 h-5 text-[#040e26]" />
           </button>
           <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-heading font-black tracking-tight drop-shadow-md leading-none flex items-baseline gap-1">
-                <span className="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-wider">GRADSKI</span>
-                <span className="gold-gradient-text text-base sm:text-lg">PARKING</span>
-                <span className="text-white font-black text-base sm:text-lg">TUZLA</span>
-              </h1>
-              {/* Online / Offline badge */}
-              <span
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider border ${
-                isOnline
-                  ? 'bg-emerald-500/15 border-emerald-400/40 text-emerald-300'
-                  : 'bg-amber-500/15 border-amber-400/40 text-amber-300'
-                }`}
-                title={isOnline ? t.pwa.onlineMode : t.pwa.offlineReady}
-              >
-                <span className={`h-1.5 w-1.5 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
-                <span>{isOnline ? 'LIVE' : 'OFFLINE'}</span>
+            <div className="flex flex-col leading-none">
+              <span className="text-[9px] font-black text-[#ffd700] uppercase tracking-[0.2em] leading-none mb-0.5">
+                GRADSKI
               </span>
+              <div className="flex items-center gap-1.5">
+                <h1 className="font-heading font-black tracking-tight text-base sm:text-lg drop-shadow-md leading-none flex items-center gap-1">
+                  <span className="gold-gradient-text">PARKING</span>
+                  <span className="text-white font-black">TUZLA</span>
+                </h1>
+                {/* Online / Offline badge */}
+                <span
+                  className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold uppercase tracking-wider border ${
+                    isOnline
+                      ? 'bg-emerald-500/15 border-emerald-400/40 text-emerald-300'
+                      : 'bg-amber-500/15 border-amber-400/40 text-amber-300'
+                  }`}
+                  title={isOnline ? t.pwa.onlineMode : t.pwa.offlineReady}
+                >
+                  <span className={`h-1.5 w-1.5 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
+                  <span>{isOnline ? 'LIVE' : 'OFFLINE'}</span>
+                </span>
+              </div>
             </div>
             <p className="text-[11px] text-white flex items-center gap-1 mt-1 font-medium">
               <Clock className="w-3.5 h-3.5 text-[#ffd700]" />
               <span className={activeWorking ? 'text-emerald-300 font-semibold' : 'text-slate-300'}>
-                {activeWorking ? `Radno vrijeme do 22:00h (${timeRemainingHours})` : 'Van radnog vremena (Besplatno)'}
+                {activeWorking ? `Radno vrijeme do 22:00h (${timeRemainingHours})` : 'Van radnog vremena'}
               </span>
             </p>
           </div>
@@ -96,11 +100,10 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 key={code}
                 onClick={() => onLanguageChange(code as Language)}
-                className={`w-8 h-7 rounded-full transition-all flex items-center justify-center border ${
-                  currentLang === code
+                className={`w-8 h-7 rounded-full transition-all flex items-center justify-center border ${currentLang === code
                     ? 'bg-[#061d40] border-[#d4af37] shadow-md scale-105'
                     : 'bg-transparent border-transparent opacity-70 hover:opacity-100'
-                }`}
+                  }`}
                 title={title}
               >
                 <img src={flag} alt={title} className="w-5 h-5 rounded-full object-cover" />
