@@ -16,7 +16,7 @@ const ASSETS_TO_CACHE = [
   'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
   '/tile/online-style.json',
   '/tile/offline-style.json',
-  '/tile/tuzla.pmtiles',
+
 ];
 
 // Helper to determine if request is for map tile images
@@ -27,8 +27,8 @@ function isTileRequest(url) {
     url.includes('basemaps.cartocdn.com') ||
     url.includes('stadiamaps') ||
     url.includes('mapbox') ||
-    url.includes('/pmtiles/') ||
-    url.match(/\/\d+\/\d+\/\d+(\.pmtiles|\.jpg|\.webp)?/)
+
+    url.match(/\/\d+\/\d+\/\d+(\.jpg|\.webp)?/)
   );
 }
 

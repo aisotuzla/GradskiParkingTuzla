@@ -41,8 +41,10 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-heading font-black text-xl tracking-tight gold-gradient-text drop-shadow-md leading-none">
-                TUZLA<span className="text-white ml-1 font-extrabold tracking-normal">PARKING</span>
+              <h1 className="font-heading font-black tracking-tight drop-shadow-md leading-none flex items-baseline gap-1">
+                <span className="text-[10px] sm:text-xs font-bold text-slate-300 uppercase tracking-wider">GRADSKI</span>
+                <span className="gold-gradient-text text-base sm:text-lg">PARKING</span>
+                <span className="text-white font-black text-base sm:text-lg">TUZLA</span>
               </h1>
               {/* Online / Offline badge */}
               <span

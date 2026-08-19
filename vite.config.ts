@@ -26,11 +26,11 @@ export default defineConfig({
       injectRegister: 'script',
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Tuzla Parking - Navigacija i SMS',
-        short_name: 'TuzlaPark',
+        name: 'Gradski Parking Tuzla - Navigacija i SMS',
+        short_name: 'Parking Tuzla',
         description: 'PWA Aplikacija za SMS plaćanje parkinga i navigaciju u Tuzli',
         theme_color: '#1e40af',
-        background_color: '#0a142f',
+        background_color: '#081353ff',
         display: 'standalone',
         start_url: '/',
         icons: [

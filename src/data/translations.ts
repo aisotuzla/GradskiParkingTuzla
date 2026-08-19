@@ -115,7 +115,7 @@ export interface TranslationSchema {
 
 export const TRANSLATIONS: Record<Language, TranslationSchema> = {
   bs: {
-    appTitle: 'Tuzla Parking',
+    appTitle: 'Gradski Parking Tuzla',
     appSubtitle: 'Pametni parking & navigacija',
     tabs: {
       map: 'Karta',
@@ -229,7 +229,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
       
 
   en: {
-    appTitle: 'Tuzla Parking',
+    appTitle: 'Gradski Parking Tuzla',
     appSubtitle: 'Smart Parking & Navigation',
     tabs: {
       map: 'Map',
@@ -340,7 +340,7 @@ export const TRANSLATIONS: Record<Language, TranslationSchema> = {
   },
   
 de: {
-    appTitle: 'Tuzla Parking',
+    appTitle: 'Gradski Parking Tuzla',
     appSubtitle: 'Intelligentes Parken & Navigation',
     tabs: {
       map: 'Karte',

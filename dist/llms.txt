@@ -1,0 +1,62 @@
+# TuzlaPark
+
+Name: TuzlaPark
+
+Type: Progressive Web Application
+
+Description:
+TuzlaPark is an AI-ready smart parking application for the City of Tuzla. It helps drivers locate parking zones, pay parking via SMS, navigate to available parking areas, manage parking sessions and use voice commands.
+
+Core Features
+
+- Smart Parking
+- SMS Payment
+- Parking Zones
+- GPS Navigation
+- Voice Assistant
+- Offline Support
+- Progressive Web App
+- Leaflet Maps
+- GeoJSON Parking Zones
+- Geoapify Maps
+- OpenStreetMap
+- Multi-language
+- Bosnian
+- English
+- German
+
+Audience
+
+Residents
+Visitors
+Tourists
+Drivers
+
+Technology
+
+React
+TypeScript
+Leaflet
+TailwindCSS
+PWA
+GeoJSON
+Geoapify
+OpenStreetMap
+
+Keywords
+
+parking
+smart parking
+tuzla
+parking bosnia
+parking sms
+parking navigation
+parking map
+parking assistant
+parking zones
+gps
+voice assistant
+offline maps
+
+# AISOTuzla - 2026
+

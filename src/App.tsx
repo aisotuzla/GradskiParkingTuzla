@@ -10,6 +10,7 @@ import { SmsPaymentModal } from './components/SmsPaymentModal';
 import { NavigationDrawer } from './components/NavigationDrawer';
 import { ActiveTimerWidget } from './components/ActiveTimerWidget';
 import { VehicleManager } from './components/VehicleManager';
+import { QuickSmsPanel } from './components/QuickSmsPanel';
 import { getActiveSession, saveActiveSession } from './services/smsService';
 import { calculateRoute, generateOfflineRoute } from './services/routingService';
 
@@ -255,21 +256,37 @@ export default function App() {
           </div>
         ) : (
           /* Normal Tab Screen Views */
-          <div className="w-full h-full overflow-y-auto">
+          <div className="w-full h-full overflow-hidden">
             {activeTab === 'map' && (
-              <MapView
-                parkingLots={TUZLA_PARKING_DATA}
-                selectedLot={selectedLot}
-                onSelectLot={(lot) => setSelectedLot(lot)}
-                onPaySms={handleOpenSmsPay}
-                onStartNavigation={handleStartNavigation}
-                userLocation={userLocation}
-                onRequestUserLocation={handleRequestLocation}
-                activeRoute={activeRoute}
-                currentLang={currentLang}
-                filterZone={filterZone}
-                onFilterZoneChange={setFilterZone}
-              />
+              <div className="w-full h-full flex flex-col overflow-hidden">
+                {/* Upper 60% MapView */}
+                <div className="h-[60%] w-full relative">
+                  <MapView
+                    parkingLots={TUZLA_PARKING_DATA}
+                    selectedLot={selectedLot}
+                    onSelectLot={(lot) => setSelectedLot(lot)}
+                    onPaySms={handleOpenSmsPay}
+                    onStartNavigation={handleStartNavigation}
+                    userLocation={userLocation}
+                    onRequestUserLocation={handleRequestLocation}
+                    activeRoute={activeRoute}
+                    currentLang={currentLang}
+                    filterZone={filterZone}
+                    onFilterZoneChange={setFilterZone}
+                  />
+                </div>
+
+                {/* Lower 40% Quick SMS Panel */}
+                <div className="h-[40%] w-full relative z-20 overflow-hidden">
+                  <QuickSmsPanel
+                    activeZone={filterZone === 'all' ? '1' : filterZone}
+                    onZoneChange={(zone) => setFilterZone(zone)}
+                    selectedLot={selectedLot}
+                    onSessionStarted={handleSessionStarted}
+                    currentLang={currentLang}
+                  />
+                </div>
+              </div>
             )}
 
             {activeTab === 'list' && (

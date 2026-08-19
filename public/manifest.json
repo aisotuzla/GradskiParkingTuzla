@@ -1,10 +1,10 @@
 {
-  "short_name": "TuzlaParking",
-  "name": "Tuzla Parking - Smart Parking & Navigation",
+  "short_name": "Parking Tuzla",
+  "name": "Gradski Parking Tuzla - SMS Parking & Navigation",
   "icons": [
     {
       "src": "/pwa-icon-192.webp",
-      "type": "image/.webpbp",
+      "type": "image/.webp",
       "sizes": "192x192"
     },
     {

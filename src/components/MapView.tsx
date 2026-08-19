@@ -3,7 +3,7 @@ import { Map, ZoomIn, ZoomOut } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Language, NavigationRoute, ParkingLotData, ParkingZone, UserLocation } from '../types';
-import { ZONE_DETAILS, TUZLA_PARKING_ZONE_POLYGON } from '../data/parkingData';
+import { ZONE_DETAILS } from '../data/parkingData';
 
 interface MapViewProps {
   parkingLots: ParkingLotData[];
@@ -172,41 +172,71 @@ export const MapView: React.FC<MapViewProps> = ({
     };
   }, []);
 
-  // Zone 0 red polygon (shown for zone 0 or all)
+  // GeoJSON parking zones (shown when filterZone === 'all')
+  const geoJsonLayerRef = useRef<L.GeoJSON | null>(null);
+  const geoJsonDataRef = useRef<any>(null);
+
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
-    if ((map as any)._zoneLayer) {
-      map.removeLayer((map as any)._zoneLayer);
-      (map as any)._zoneLayer = null;
+    if (geoJsonLayerRef.current) {
+      map.removeLayer(geoJsonLayerRef.current);
+      geoJsonLayerRef.current = null;
     }
 
-    if (filterZone === 'all' || filterZone === '0') {
-      const rawCoords = TUZLA_PARKING_ZONE_POLYGON.polygons;
-      const leafletCoords = rawCoords
-        .filter(p => Array.isArray(p) && p.length >= 2 && !isNaN(p[0]) && !isNaN(p[1]))
-        .map(p => [p[1], p[0]] as [number, number]); // Leaflet expects [lat, lng]
+    if (filterZone === 'all') {
+      const renderGeoJson = (data: any) => {
+        if (!mapRef.current) return;
+        if (geoJsonLayerRef.current) {
+          mapRef.current.removeLayer(geoJsonLayerRef.current);
+        }
+        const layer = L.geoJSON(data, {
+          style: (feature) => {
+            const featureFill = feature?.properties?.fill;
+            const featureStroke = feature?.properties?.stroke;
+            return {
+              fillColor: featureFill || '#1d4ed8',
+              fillOpacity: 0.1,
+              color: featureStroke || '#3b82f6',
+              opacity: feature?.properties?.['stroke-opacity'] ?? 0.6,
+              weight: feature?.properties?.['stroke-width'] ? Number(feature.properties['stroke-width']) * 2 : 1.5,
+            };
+          },
+        }).addTo(mapRef.current);
+        geoJsonLayerRef.current = layer;
+      };
 
-      const poly = L.polygon(leafletCoords, {
-        color: TUZLA_PARKING_ZONE_POLYGON.color,
-        fillColor: TUZLA_PARKING_ZONE_POLYGON.fillColor || TUZLA_PARKING_ZONE_POLYGON.color,
-        fillOpacity: 0.25,
-        weight: 1,
-      }).addTo(map);
-
-      (map as any)._zoneLayer = poly;
+      if (geoJsonDataRef.current) {
+        renderGeoJson(geoJsonDataRef.current);
+      } else {
+        fetch('/tile/ParkingZones.geojson')
+          .then((res) => res.json())
+          .then((data) => {
+            geoJsonDataRef.current = data;
+            renderGeoJson(data);
+          })
+          .catch((err) => {
+            console.error('Failed to load ParkingZones.geojson', err);
+          });
+      }
     }
   }, [filterZone]);
 
-  // Parking markers
+  // Parking markers (hidden when filterZone === 'all', shown for specific zone buttons)
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
     // Clear existing markers
     Object.values(markersRef.current).forEach(m => m.remove());
     markersRef.current = {};
-    const filtered = parkingLots.filter(lot => filterZone === 'all' || lot.zone === filterZone);
+
+    if (filterZone === 'all') {
+      // Hide all other markers when "Sve" / "All" is active
+      return;
+    }
+
+    const filtered = parkingLots.filter(lot => lot.zone === filterZone);
     filtered.forEach(lot => {
       // coordinates in parkingData are [lng, lat] (e.g., [18.67, 44.53])
       const lng = Number(lot.coordinates?.[0]);
@@ -371,7 +401,7 @@ export const MapView: React.FC<MapViewProps> = ({
               key={zone}
               onClick={() => onFilterZoneChange(zone)}
               className={`px-2 py-1 rounded-full border text-xs font-bold transition-all ${filterZone === zone ? 'bg-gradient-to-r from-[#1d4ed8] via-[#1e3a8a] to-[#08153b] text-white border-[#d4af37]/60 shadow-[0_0_18px_rgba(212,175,55,0.22)]' : 'bg-[#041530] border-[#d4af37]/30 text-[#ffd77a]'}`}
-            >(Z{zone})</button>
+            >Z{zone}</button>
           ))}
         </div>
       </div>
