@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
     "@vitejs/plugin-react": "^5.0.4",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
@@ -24,6 +26,8 @@
     "react": "^19.0.1",
     "react-dom": "^19.0.1",
     "rollup": "^4.62.4",
+    "test": "^3.3.0",
+    "vercel": "^59.1.4",
     "workbox": "^0.0.0",
     "workbox-window": "^7.4.1"
   },
@@ -43,6 +47,7 @@
   },
   "allowScripts": {
     "core-js@2.6.12": true,
-    "esbuild@0.28.1": true
+    "esbuild@0.25.12": true,
+    "esbuild@0.28.2": true
   }
 }

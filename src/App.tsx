@@ -14,7 +14,7 @@ import { QuickSmsPanel } from './components/QuickSmsPanel';
 import { PwaInstallModal } from './components/PwaInstallModal';
 import { getActiveSession, saveActiveSession } from './services/smsService';
 import { calculateRoute, generateOfflineRoute } from './services/routingService';
-
+import { Analytics } from "@vercel/analytics/react"
 // Center of Tuzla city coordinates (Trg slobode / Centar)
 const TUZLA_CENTER: UserLocation = { lat: 44.5385, lng: 18.6770 };
 
@@ -385,11 +385,10 @@ export default function App() {
           {/* Map Tab */}
           <button
             onClick={() => setActiveTab('map')}
-            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
-              activeTab === 'map'
+            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${activeTab === 'map'
                 ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
                 : 'text-slate-400 hover:text-slate-200'
-            }`}
+              }`}
           >
             <Map className="w-5 h-5 mb-0.5" />
             <span className="text-[10px] uppercase font-bold tracking-tight">{t.tabs.map}</span>
@@ -401,11 +400,10 @@ export default function App() {
               setActiveRoute(null);
               setActiveTab('list');
             }}
-            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
-              activeTab === 'list'
+            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${activeTab === 'list'
                 ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
                 : 'text-slate-400 hover:text-slate-200'
-            }`}
+              }`}
           >
             <List className="w-5 h-5 mb-0.5" />
             <span className="text-[10px] uppercase font-bold tracking-tight">{t.tabs.list}</span>
@@ -429,11 +427,10 @@ export default function App() {
               setActiveRoute(null);
               setActiveTab('timer');
             }}
-            className={`relative flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
-              activeTab === 'timer'
+            className={`relative flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${activeTab === 'timer'
                 ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
                 : 'text-slate-400 hover:text-slate-200'
-            }`}
+              }`}
           >
             <Clock className="w-5 h-5 mb-0.5" />
             <span className="text-[10px] uppercase font-bold tracking-tight">{t.tabs.timer}</span>
@@ -448,11 +445,10 @@ export default function App() {
               setActiveRoute(null);
               setActiveTab('vehicle');
             }}
-            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
-              activeTab === 'vehicle'
+            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${activeTab === 'vehicle'
                 ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
                 : 'text-slate-400 hover:text-slate-200'
-            }`}
+              }`}
           >
             <Car className="w-5 h-5 mb-0.5" />
             <span className="text-[10px] uppercase font-bold tracking-tight">{t.tabs.vehicle}</span>
