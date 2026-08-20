@@ -67,6 +67,7 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
       return;
     }
 
+    // Create a payment session for UI tracking
     const session = createPaymentSession(
       activeZone,
       cleanPlate,
@@ -75,11 +76,22 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
       selectedLot?.id,
       selectedLot?.name
     );
-
     onSessionStarted(session);
 
-    // Launch native SMS application
-    window.location.href = smsUri;
+    // Day ticket – one SMS is enough
+    if (isDayTicket) {
+      window.location.href = smsUri;
+      return;
+    }
+
+    // Hourly ticket – send one SMS per selected hour.
+    // We use a small delay between messages to give the device time to open the SMS composer.
+    for (let i = 0; i < hours; i++) {
+      setTimeout(() => {
+        // Regenerate URI each iteration to ensure a fresh navigation.
+        window.location.href = generateSmsUri(activeSmsNumber, cleanPlate);
+      }, i * 300); // 300 ms between messages
+    }
   };
 
   const handleCopySms = () => {
