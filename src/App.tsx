@@ -14,7 +14,7 @@ import { QuickSmsPanel } from './components/QuickSmsPanel';
 import { PwaInstallModal } from './components/PwaInstallModal';
 import { getActiveSession, saveActiveSession } from './services/smsService';
 import { calculateRoute, generateOfflineRoute } from './services/routingService';
-import { Analytics } from "@vercel/analytics/react"
+
 // Center of Tuzla city coordinates (Trg slobode / Centar)
 const TUZLA_CENTER: UserLocation = { lat: 44.5385, lng: 18.6770 };
 
@@ -30,6 +30,16 @@ export default function App() {
   const [activeSession, setActiveSession] = useState<ParkingPaymentSession | null>(getActiveSession());
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
+
+  // Installed / Standalone PWA state detection
+  const [isAppInstalled, setIsAppInstalled] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+    const isIosStandalone = (window.navigator as any).standalone === true;
+    const isReferrer = document.referrer.includes('android-app://');
+    const localFlag = localStorage.getItem('tuzla_pwa_installed') === 'true';
+    return isStandalone || isIosStandalone || isReferrer || localFlag;
+  });
 
   const notified10MinRef = React.useRef<boolean>(false);
   const notifiedExpiredRef = React.useRef<boolean>(false);
@@ -50,15 +60,26 @@ export default function App() {
     };
   }, []);
 
-  // Monitor PWA install prompt
+  // Monitor PWA install prompt & appinstalled event
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: any) => {
       e.preventDefault();
       setDeferredInstallPrompt(e);
     };
 
+    const handleAppInstalled = () => {
+      setIsAppInstalled(true);
+      localStorage.setItem('tuzla_pwa_installed', 'true');
+      setDeferredInstallPrompt(null);
+    };
+
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
   }, []);
 
   // Auto request user location on app launch
@@ -127,11 +148,14 @@ export default function App() {
   const handleInstallPwa = () => {
     if (deferredInstallPrompt) {
       deferredInstallPrompt.prompt();
-      deferredInstallPrompt.userChoice.then(() => {
+      deferredInstallPrompt.userChoice.then((choice: any) => {
+        if (choice?.outcome === 'accepted') {
+          setIsAppInstalled(true);
+          localStorage.setItem('tuzla_pwa_installed', 'true');
+        }
         setDeferredInstallPrompt(null);
       });
     }
-    // Always open instruction modal so user has guaranteed option to download/install on any device
     setIsPwaModalOpen(true);
   };
 
@@ -228,6 +252,7 @@ export default function App() {
         onInstallPwa={handleInstallPwa}
         activeTimerCount={activeSession && activeSession.endTime > Date.now() ? 1 : 0}
         onOpenTimer={() => setActiveTab('timer')}
+        isAppInstalled={isAppInstalled}
       />
 
       {/* Main Screen Body */}
@@ -371,7 +396,11 @@ export default function App() {
         onNativeInstall={() => {
           if (deferredInstallPrompt) {
             deferredInstallPrompt.prompt();
-            deferredInstallPrompt.userChoice.then(() => {
+            deferredInstallPrompt.userChoice.then((choice: any) => {
+              if (choice?.outcome === 'accepted') {
+                setIsAppInstalled(true);
+                localStorage.setItem('tuzla_pwa_installed', 'true');
+              }
               setDeferredInstallPrompt(null);
             });
           }
@@ -385,10 +414,11 @@ export default function App() {
           {/* Map Tab */}
           <button
             onClick={() => setActiveTab('map')}
-            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${activeTab === 'map'
+            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'map'
                 ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
                 : 'text-slate-400 hover:text-slate-200'
-              }`}
+            }`}
           >
             <Map className="w-5 h-5 mb-0.5" />
             <span className="text-[10px] uppercase font-bold tracking-tight">{t.tabs.map}</span>
@@ -400,10 +430,11 @@ export default function App() {
               setActiveRoute(null);
               setActiveTab('list');
             }}
-            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${activeTab === 'list'
+            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'list'
                 ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
                 : 'text-slate-400 hover:text-slate-200'
-              }`}
+            }`}
           >
             <List className="w-5 h-5 mb-0.5" />
             <span className="text-[10px] uppercase font-bold tracking-tight">{t.tabs.list}</span>
@@ -427,10 +458,11 @@ export default function App() {
               setActiveRoute(null);
               setActiveTab('timer');
             }}
-            className={`relative flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${activeTab === 'timer'
+            className={`relative flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'timer'
                 ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
                 : 'text-slate-400 hover:text-slate-200'
-              }`}
+            }`}
           >
             <Clock className="w-5 h-5 mb-0.5" />
             <span className="text-[10px] uppercase font-bold tracking-tight">{t.tabs.timer}</span>
@@ -445,10 +477,11 @@ export default function App() {
               setActiveRoute(null);
               setActiveTab('vehicle');
             }}
-            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${activeTab === 'vehicle'
+            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'vehicle'
                 ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
                 : 'text-slate-400 hover:text-slate-200'
-              }`}
+            }`}
           >
             <Car className="w-5 h-5 mb-0.5" />
             <span className="text-[10px] uppercase font-bold tracking-tight">{t.tabs.vehicle}</span>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Send, Copy, Check, AlertTriangle, MessageSquare, Car } from 'lucide-react';
+import { X, Send, Copy, Check, MessageSquare, Car } from 'lucide-react';
 import { Language, ParkingLotData, ParkingPaymentSession, ParkingZone } from '../types';
 import { ZONE_DETAILS, getSmsNumber } from '../data/parkingData';
 import { TRANSLATIONS } from '../data/translations';
@@ -9,7 +9,6 @@ import {
   formatPlateDisplay,
   generateSmsUri,
   getSavedPlates,
-  isWorkingHoursNow,
   sanitizePlate,
 } from '../services/smsService';
 
@@ -61,7 +60,6 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
   const totalPrice = calculateParkingCost(activeZone, hours, isDayTicket);
   const cleanPlate = sanitizePlate(licensePlate);
   const smsUri = generateSmsUri(activeSmsNumber, cleanPlate);
-  const workingHours = isWorkingHoursNow();
 
   const handleSendSms = () => {
     if (!cleanPlate || cleanPlate.length < 3) {
@@ -128,14 +126,6 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
             <X className="w-5 h-5" />
           </button>
         </div>
-
-        {/* Working Hours Alert Banner */}
-        {!workingHours && (
-          <div className="mb-4 p-3 rounded-xl bg-[#0b1a45] border border-[#d4af37]/40 text-slate-200 text-xs flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0 text-[#ffd700]" />
-            <span>{t.workingHours.freeText}</span>
-          </div>
-        )}
 
         {/* Zone Selection */}
         <div className="mb-4">
@@ -279,7 +269,7 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
             className="w-full py-3.5 px-4 rounded-lg bg-[#d4af37] text-[#0a1128] font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:bg-[#b8860b] active:scale-95 transition-all cursor-pointer"
           >
             <Send className="w-4 h-4 fill-current" />
-            <span>{t.smsPayment.sendSmsButton}</span>
+            <span>{t.sendSmsButton || t.smsPayment.sendSmsButton}</span>
           </button>
 
           <button
