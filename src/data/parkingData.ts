@@ -26,7 +26,7 @@ export const ZONE_DETAILS: Record<ParkingZone, ZoneDetails> = {
     zone: '1',
     name: 'Zona 1 (Šira Zona)',
     hourlyPrice: 1.0,
-    dailyPrice: 4.0,
+    dailyPrice: 5.0,
     shortCode: '0833511',
     hourlyShortCode: '0833511',
     dailyShortCode: '0833514',
@@ -38,7 +38,7 @@ export const ZONE_DETAILS: Record<ParkingZone, ZoneDetails> = {
     zone: '2',
     name: 'Zona 2 (Periferija)',
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
     shortCode: '0833512',
     hourlyShortCode: '0833512',
     dailyShortCode: '0833515',
@@ -206,7 +206,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Shopping mall access", "Surface parking"],
     zone: "1",
     hourlyPrice: 1.0,
-    dailyPrice: 4.0,
+    dailyPrice: 5.0,
     capacity: 450,
   },
   {
@@ -230,7 +230,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Zone 2", "Public lot", "Close to Dom Zdravlja clinic"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
     capacity: 220,
   },
   {
@@ -242,7 +242,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Zone 1", "Public lot", "Parking Slatina"],
     zone: "1",
     hourlyPrice: 1.0,
-    dailyPrice: 4.0,
+    dailyPrice: 5.0,
     capacity: 150,
   },
   {
@@ -278,7 +278,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Zone 1 dynamic pricing", "Automated entry ramp"],
     zone: "1",
     hourlyPrice: 1.0,
-    dailyPrice: 4.0,
+    dailyPrice: 5.0,
     capacity: 60,
   },
   {
@@ -313,7 +313,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["JKP Saobraćaj i komunikacije", "Direct lake gate entry"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
     capacity: 250,
   },
   {
@@ -325,7 +325,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Automated ramp gates", "High capacity (~200 spaces)"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
     capacity: 200,
   },
   {
@@ -337,7 +337,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Large surface capacity", "Automated pay terminals"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
     capacity: 320,
   },
   {
@@ -349,7 +349,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Independent medical campus tariff", "Incline surface terrain"],
     zone: "1",
     hourlyPrice: 1.0,
-    dailyPrice: 4.0,
+    dailyPrice: 5.0,
     capacity: 280,
   },
 
@@ -362,7 +362,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Zone 1 public parking", "Open-air surface spaces"],
     zone: "1",
     hourlyPrice: 1.0,
-    dailyPrice: 4.0,
+    dailyPrice: 5.0,
     capacity: 170,
   },
   {
@@ -374,7 +374,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Zona 1", "Public street parking", "Working hours: 07:00 - 22:00"],
     zone: "1",
     hourlyPrice: 1.0,
-    dailyPrice: 4.0,
+    dailyPrice: 5.0,
     capacity: 120,
   },
   {
@@ -386,7 +386,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Broad parking bays", "Low congestion area"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
     capacity: 140,
   },
   {
@@ -395,7 +395,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     area: "bhtelecom",
     address: "Bulevar 2. korpusa",
     coordinates: [18.691429, 44.533269],
-    features: ["zone 1 payment 1.00KM/h, 5.00KM/day"],
+    features: ["Zone 1 payment 1.00KM/h, 5.00KM/day"],
     zone: "1",
     hourlyPrice: 1.0,
     dailyPrice: 5.0,
@@ -410,7 +410,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Open public bay", "Feeder lanes to high-rise zones"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
     capacity: 130,
   },
   {
@@ -422,7 +422,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Large neighborhood lot", "Easy connection to eastern bypass"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
     capacity: 210,
   },
   {
@@ -434,7 +434,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Working hours: 07:00 - 22:00"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
   },
   {
     id: "franjevacka-socijalno",
@@ -445,7 +445,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Working hours: 07:00 - 22:00"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
   },
   {
     id: "muzicka-skola",
@@ -456,7 +456,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Working hours: 07:00 - 22:00"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
   },
   {
     id: "kula-fg",
@@ -467,7 +467,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Working hours: 07:00 - 22:00"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
   },
   {
     id: "ulica-pazar",
@@ -478,7 +478,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Working hours: 07:00 - 22:00"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
   },
   {
     id: "mikrostanica",
@@ -489,7 +489,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Working hours: 07:00 - 22:00"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
   },
   {
     id: "dom-mladih",
@@ -500,7 +500,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Working hours: 07:00 - 22:00"],
     zone: "1",
     hourlyPrice: 1.0,
-    dailyPrice: 4.0,
+    dailyPrice: 5.0,
   },
   {
     id: "banka",
@@ -511,7 +511,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Working hours: 07:00 - 22:00"],
     zone: "1",
     hourlyPrice: 1.0,
-    dailyPrice: 4.0,
+    dailyPrice: 5.0,
   },
   {
     id: "ulica-15-maja-buvlja",
@@ -522,7 +522,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Working hours: 07:00 - 22:00"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
   },
   {
     id: "stari grad",
@@ -545,7 +545,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Working hours: 07:00 - 18:00"],
     zone: "1",
     hourlyPrice: 1.0,
-    dailyPrice: 4.0,
+    dailyPrice: 5.0,
   },
   {
     id: "gradina-2",
@@ -556,7 +556,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Working hours: 07:00 - 22:00"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
   },
   {
     id: "kralja-tvrtka",
@@ -567,7 +567,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Working hours: 07:00 - 22:00"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
   },
   {
     id: "jupiter",
@@ -578,7 +578,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Working hours: 07:00 - 22:00"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
   },
   {
     id: "fra-grge-martica",
@@ -589,7 +589,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Working hours: 07:00 - 22:00"],
     zone: "2",
     hourlyPrice: 0.5,
-    dailyPrice: 3.0,
+    dailyPrice: 4.0,
   },
   {
     id: "tenis",
@@ -600,7 +600,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Zona 1"],
     zone: "1",
     hourlyPrice: 1.0,
-    dailyPrice: 4.0,
+    dailyPrice: 5.0,
   },
   {
     id: "tc-merkator",
@@ -611,7 +611,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Zona 1"],
     zone: "1",
     hourlyPrice: 1.0,
-    dailyPrice: 4.0,
+    dailyPrice: 5.0,
   },
   {
     id: "bulevar",
@@ -622,7 +622,7 @@ export const TUZLA_PARKING_DATA: ParkingLotData[] = [
     features: ["Zona 1"],
     zone: "1",
     hourlyPrice: 1.0,
-    dailyPrice: 4.0,
+    dailyPrice: 5.0,
   }
 ];
 
