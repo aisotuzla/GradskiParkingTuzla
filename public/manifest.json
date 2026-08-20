@@ -1,6 +1,7 @@
 {
   "short_name": "Parking Tuzla",
-  "name": "Gradski Parking Tuzla - SMS Parking & Navigation",
+  "name": "Gradski Parking Tuzla - SMS Payment & Navigation",
+  "description": "Parking Tuzla is PWA application for SMS parking payment, navigation and Interactive map for Tuzla city parking zones",
   "icons": [
     {
       "src": "/pwa-icon-192.webp",

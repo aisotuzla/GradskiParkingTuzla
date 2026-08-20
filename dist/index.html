@@ -9,102 +9,83 @@
   <meta name="theme-color" content="#030816">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="description" content="PWA Aplikacija za SMS plaćanje parkinga i navigaciju u Tuzli">
-  <meta name="keywords" content="parking, smart parking, tuzla, sms payment, navigation, pwa, gradski parking tuzla">
-  <meta name="language" content="bs">
-  <meta name="robots" content="index, follow, archive">
-  <meta name="author" content="Gradski Parking Tuzla">
 
-  <!-- Open Graph / Canonical -->
+  <!-- Conversational Description for Search & AI Agents -->
+  <meta name="description"
+    content="PWA aplikacija za SMS plaćanje parkinga, prikaz parking zona (Zona 0, 1, 2), cijena i GPS navigaciju u Tuzli. Pronađite najbliži parking i platite brzo i jednostavno putem SMS-a.">
+  <meta name="keywords"
+    content="parking tuzla, sms parking tuzla, gradski parking tuzla, parking zone tuzla, navigacija parking">
+  <meta name="language" content="en,bs,de">
+  <meta name="robots" content="index, follow, archive">
+  <meta name="author" content="AISO Tuzla">
+
+  <!-- LLM & GEO Discovery Links -->
+  <link rel="alternate" type="text/markdown" href="/llms.txt" title="LLM Context Documentation" />
   <link rel="canonical" href="https://gradskiparkingtuzla.vercel.app/" />
+
+  <!-- Open Graph -->
   <meta property="og:title" content="Gradski Parking Tuzla - SMS Parking & GPS Navigacija" />
-  <meta property="og:description" content="PWA Aplikacija za SMS plaćanje parkinga i navigaciju u Tuzli" />
+  <meta property="og:description"
+    content="PWA aplikacija za SMS plaćanje parkinga, prikaz parking zona i GPS navigaciju u Tuzli." />
   <meta property="og:url" content="https://gradskiparkingtuzla.vercel.app/" />
   <meta property="og:type" content="website" />
+  <meta property="og:locale" content="bs_BA" />
 
-  <!-- JSON-LD Structured Data for SEO & AI Agents -->
+  <!-- Unified JSON-LD Schema for AI Engines -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "Gradski Parking Tuzla",
-    "description": "PWA Aplikacija za SMS plaćanje parkinga i navigaciju u Tuzli",
-    "url": "https://gradskiparkingtuzla.vercel.app/",
-    "appCategory": "Parking",
-    "operatingSystem": "Web",
-    "offers": {
-      "@type": "Offer",
-      "name": "SMS Parking Payment",
-      "description": "Pay parking via SMS in Tuzla"
-    },
-    "author": {
-      "@type": "Organization",
-      "name": "Gradski Parking Tuzla"
-    },
-    "keywords": "parking, smart parking, tuzla, sms payment, navigation, pwa",
-    "inLanguage": "bs",
-    "version": "1.0",
-    "featureList": [
-      "Smart Parking",
-      "SMS Payment",
-      "GPS Navigation",
-      "Offline Support",
-      "Multi-language"
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "@id": "https://gradskiparkingtuzla.vercel.app/#app",
+        "name": "Gradski Parking Tuzla",
+        "alternateName": "Tuzla Smart Parking PWA",
+        "operatingSystem": "Web, Android, iOS (PWA)",
+        "applicationCategory": "ParkingApplication",
+        "url": "https://gradskiparkingtuzla.vercel.app/",
+        "inLanguage": ["bs", "en", "de"],
+        "description": "Progressive Web Application for real-time parking zone navigation, hourly rate estimation, and automated SMS payments in Tuzla.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "BAM",
+          "description": "Free application for parking navigation and SMS draft generation."
+        },
+        "featureList": [
+          "Interactive map for Parking Zones 0, 1, and 2",
+          "Automated SMS payment generation",
+          "Turn-by-turn turn GPS navigation to nearest spot",
+          "Offline PWA tile caching",
+          "Multilingual support (Bosnian, English, German)"
+        ]
+      },
+      {
+        "@type": "CivicStructure",
+        "@id": "https://gradskiparkingtuzla.vercel.app/#location",
+        "name": "Gradski Parking Tuzla Service Area",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Tuzla",
+          "addressRegion": "Tuzlanski kanton",
+          "addressCountry": "BA"
+        },
+        "geo": {
+          "@type": "GeoCoordinates",
+          "latitude": 44.5349,
+          "longitude": 18.6780
+        },
+        "areaServed": "Tuzla, Bosnia and Herzegovina"
+      }
     ]
   }
   </script>
 
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    "name": "Gradski Parking Tuzla",
-    "description": "Smart parking application for Tuzla, Bosnia and Herzegovina",
-    "url": "https://gradskiparkingtuzla.vercel.app/",
-    "address": {
-      "@type": "PostalAddress",
-      "addressLocality": "Tuzla",
-      "addressRegion": "Bosnia and Herzegovina",
-      "addressCountry": "BA"
-    },
-    "geo": {
-      "@type": "GeoCoordinates",
-      "latitude": 44.5349,
-      "longitude": 18.6780
-    },
-    "openingHours": "Mo-Su 00:00-23:59",
-    "priceRange": "BAM",
-    "areaServed": "Tuzla, Bosnia and Herzegovina"
-  }
-  </script>
-
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
-    "name": "Gradski Parking Tuzla",
-    "operatingSystem": "Web",
-    "softwareSource": "https://gradskiparkingtuzla.vercel.app/",
-    "applicationCategory": "Parking",
-    "offers": {
-      "@type": "Offer",
-      "name": "SMS Parking Payment",
-      "description": "Pay parking via SMS in Tuzla"
-    },
-    "featureList": [
-      "Smart Parking",
-      "SMS Payment",
-      "GPS Navigation",
-      "Offline Support",
-      "Multi-language"
-    ],
-    "softwareVersion": "1.0"
-  }
-  </script>
-
-  <script type="module" crossorigin src="/assets/index-BvPHSvQ5.js"></script>
+  <link rel="manifest" href="/manifest.webmanifest">
+  <script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script>
+  <script type="module" crossorigin src="/assets/index-cq_utNLU.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/react-CYSfZuHu.js">
-  <link rel="stylesheet" crossorigin href="/assets/index-CFHRNLZu.css">
+  <link rel="stylesheet" crossorigin href="/assets/index-ChOOoPlg.css">
 <link rel="manifest" href="/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/registerSW.js"></script></head>
 
 <body

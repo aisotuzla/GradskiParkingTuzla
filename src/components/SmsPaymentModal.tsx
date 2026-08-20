@@ -269,7 +269,7 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
             className="w-full py-3.5 px-4 rounded-lg bg-[#d4af37] text-[#0a1128] font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:bg-[#b8860b] active:scale-95 transition-all cursor-pointer"
           >
             <Send className="w-4 h-4 fill-current" />
-            <span>{t.sendSmsButton || t.smsPayment.sendSmsButton}</span>
+            <span>{t.smsPayment.sendSmsButton}</span>
           </button>
 
           <button

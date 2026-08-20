@@ -1,62 +1,60 @@
-# TuzlaPark
+Gradski Parking Tuzla is a Progressive Web Application (PWA) designed to simplify vehicle parking in Tuzla, Bosnia and Herzegovina. It integrates interactive OpenStreetMap visualization, GPS navigation, SMS payment automation, parking zone management, and offline support.
 
-Name: TuzlaPark
+Overview
+Name: Gradski Parking Tuzla
 
-Type: Progressive Web Application
+Type: Mobile-first Progressive Web Application (PWA)
 
-Description:
-TuzlaPark is an AI-ready smart parking application for the City of Tuzla. It helps drivers locate parking zones, pay parking via SMS, navigate to available parking areas, manage parking sessions and use voice commands.
+Organization: AISO Tuzla
 
-Core Features
+License: MIT
 
-- Smart Parking
-- SMS Payment
-- Parking Zones
-- GPS Navigation
-- Voice Assistant
-- Offline Support
-- Progressive Web App
-- Leaflet Maps
-- GeoJSON Parking Zones
-- Geoapify Maps
-- OpenStreetMap
-- Multi-language
-- Bosnian
-- English
-- German
+Target Audience: Drivers, residents, commuters, and tourists navigating Tuzla.
 
-Audience
+Languages Supported: Bosnian (bs), English (en), German (de).
 
-Residents
-Visitors
-Tourists
-Drivers
+Core Capabilities & Features
+Smart Parking Management
+Zone Visualization: Real-time visual overlays for Zone 0, Zone 1, and Zone 2 parking areas in Tuzla.
 
-Technology
+Price Transparency: Provides official city parking rates per zone and tracks active working hours dynamically.
 
-React
-TypeScript
-Leaflet
-TailwindCSS
-PWA
-GeoJSON
-Geoapify
-OpenStreetMap
+SMS Payment Automation: Generates pre-formatted SMS payment requests for local parking operators.
 
-Keywords
+Parking Timers: Built-in expiration timers and alerts for paid parking sessions.
 
-parking
-smart parking
-tuzla
-parking bosnia
-parking sms
-parking navigation
-parking map
-parking assistant
-parking zones
-gps
-voice assistant
-offline maps
+Closest Parking Finder: Identifies nearest available parking locations based on live GPS location.
 
-# AISOTuzla - 2026
+Navigation & Mapping
+Interactive Maps: Built with Leaflet and Geoapify Maps on top of OpenStreetMap data.
 
+Route Calculation: Provides turn-by-turn navigation and optimal routes to selected parking zones.
+
+Offline Mode: Map tiles and critical parking data remain functional without active cellular connectivity using Service Workers.
+
+Technical Architecture
+Frontend Framework: React with TypeScript
+
+Styling & UI: TailwindCSS, Lucide Icons
+
+Mapping Stack: Leaflet, Geoapify API, OpenStreetMap
+
+Application Type: Installable PWA with offline caching capabilities
+
+Project Structure
+src/components/ - UI components (maps, parking details, payment modal, navigation controls).
+
+src/services/ - External API integrations (Geoapify, geolocation, offline tile caching).
+
+src/data/ - Static datasets including zone coordinates, pricing rules, and SMS gateways.
+
+src/hooks/ - Custom React hooks for GPS tracking, timers, and offline status.
+
+src/utils/ - Utility functions for SMS link generation, distance calculation, and time detection.
+
+src/types/ - TypeScript type definitions for parking zones, coordinates, and app state.
+
+Contact & Support
+Maintainer: AISO Tuzla
+
+Email: [aiso_tuzla@proton.me]

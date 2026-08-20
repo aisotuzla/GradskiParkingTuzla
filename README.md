@@ -1,6 +1,6 @@
 # 🚗 Gradski Parking Tuzla – SMS Parking & Navigation
 
-Gradski Parking Tuzla is a Progressive Web Application (PWA) that simplifies parking in Tuzla by combining interactive maps, GPS navigation, SMS parking payment, voice commands and offline support into a single mobile-first application.
+Gradski(Public) Parking Tuzla is a Progressive Web Application (PWA) that simplifies parking in Tuzla by combining interactive maps, GPS navigation, SMS parking payment, voice commands and offline support into a single mobile-first application.
 
 ---
 
@@ -73,8 +73,9 @@ src/
 MIT
 
 ---
-
+AISO TUZLA 
 Made with ❤️ for the City of Tuzla.
+aiso_tuzla@proton.me
 
 # 🚗 Gradski Parking Tuzla – SMS Parking & Navigation
 
@@ -154,3 +155,5 @@ MIT
 ---
 
 Razvijeno za građane i posjetioce grada Tuzle.
+AISO TUZLA 
+E-mail: [aiso_tuzla@proton.me]
