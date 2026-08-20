@@ -8,9 +8,6 @@ import {
   Bell,
   BellRing,
   CheckCircle,
-  Receipt,
-  TrendingUp,
-  Calendar,
   History,
   Trash2,
 } from 'lucide-react';
@@ -52,7 +49,6 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
     }
   };
 
-  // Load payment history on mount and when session updates
   useEffect(() => {
     setHistoryList(getPaymentHistory());
   }, [session]);
@@ -70,7 +66,6 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
       }
     }, 1000);
 
-    // Initial compute
     const initial = session.endTime - Date.now();
     setTimeLeftMs(Math.max(0, initial));
 
@@ -78,15 +73,14 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
   }, [session]);
 
   const handleClearHistory = () => {
-    if (window.confirm('Sigurno želite obrisati historiju plaćanja?')) {
+    if (window.confirm(t.timer.clearHistoryConfirm)) {
       clearPaymentHistory();
       setHistoryList([]);
     }
   };
 
-  const isExpiringSoon = timeLeftMs > 0 && timeLeftMs < 10 * 60 * 1000; // < 10 minutes
+  const isExpiringSoon = timeLeftMs > 0 && timeLeftMs < 10 * 60 * 1000;
 
-  // Format active session time
   const totalSecs = Math.floor(timeLeftMs / 1000);
   const hours = Math.floor(totalSecs / 3600);
   const mins = Math.floor((totalSecs % 3600) / 60);
@@ -108,7 +102,7 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
   const stats = getPaymentStats(historyList);
 
   return (
-    <div className="max-w-md mx-auto my-3 px-1 space-y-4 text-slate-100">
+    <div className="max-w-md mx-auto my-3 px-1 space-y-4 text-slate-100 font-sans pb-20">
       {/* Active Session Timer Card OR Empty State */}
       {session ? (
         <div className="bg-[#1a2a44] border border-[#d4af37]/40 rounded-2xl p-4 sm:p-5 shadow-2xl">
@@ -128,7 +122,7 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
 
             <button
               onClick={onClearSession}
-              className="p-1 rounded-full text-slate-400 hover:text-white transition-colors"
+              className="p-1 rounded-full text-slate-400 hover:text-white transition-colors cursor-pointer"
               title={t.timer.cancelSession}
             >
               <XCircle className="w-5 h-5" />
@@ -152,11 +146,11 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
                 <Bell className="w-4 h-4 text-[#d4af37] shrink-0" />
               )}
               <div>
-                <span className="font-bold text-slate-200 block">Obavještenja o isteku</span>
+                <span className="font-bold text-slate-200 block">{t.timer.expiryNotifications}</span>
                 <span className="text-[10px] text-slate-400">
                   {notifPermission === 'granted'
-                    ? 'Automatsko upozorenje 10 min prije isteka'
-                    : 'Uključi push notifikacije kad parking ističe'}
+                    ? t.timer.autoAlert10Min
+                    : t.timer.enablePush}
                 </span>
               </div>
             </div>
@@ -164,13 +158,13 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
             {notifPermission !== 'granted' ? (
               <button
                 onClick={requestNotificationPermission}
-                className="px-2.5 py-1 rounded-md bg-[#d4af37] text-[#0a1128] font-bold text-[11px] hover:bg-[#b8860b] transition-all shrink-0"
+                className="px-2.5 py-1 rounded-md bg-[#d4af37] text-[#0a1128] font-bold text-[11px] hover:bg-[#b8860b] transition-all shrink-0 cursor-pointer"
               >
-                Omogući
+                {t.timer.enable}
               </button>
             ) : (
               <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold flex items-center gap-1 shrink-0">
-                <CheckCircle className="w-3 h-3" /> Aktivno
+                <CheckCircle className="w-3 h-3" /> {t.timer.active}
               </span>
             )}
           </div>
@@ -198,7 +192,7 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
             <div className="bg-[#14213d] p-2.5 rounded-lg border border-slate-700/60">
               <span className="text-slate-400 text-[10px] block">{t.timer.zone}</span>
               <span className="font-extrabold uppercase text-sm text-[#d4af37]">
-                Zona {session.zone} ({session.totalPrice.toFixed(1)} KM)
+                {t.parkingList.zoneLabel} {session.zone} ({session.totalPrice.toFixed(1)} KM)
               </span>
             </div>
 
@@ -216,7 +210,7 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
           {/* Action: Extend Parking */}
           <button
             onClick={onExtendSession}
-            className="w-full py-3 px-4 rounded-lg bg-[#d4af37] text-[#0a1128] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:bg-[#b8860b] active:scale-95 transition-all"
+            className="w-full py-3 px-4 rounded-lg bg-[#d4af37] text-[#0a1128] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:bg-[#b8860b] active:scale-95 transition-all cursor-pointer"
           >
             <RefreshCw className="w-4 h-4" />
             <span>{t.timer.extendParking}</span>
@@ -244,17 +238,17 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-sm text-white">
-                {t.timer.historyTitle || 'Historija Plaćanja & Statistika'}
+                {t.timer.historyTitle}
               </h3>
-              <p className="text-[11px] text-slate-400">Pregled potrošnje i evidencija SMS kartica</p>
+              <p className="text-[11px] text-slate-400">{t.timer.historySubtitle}</p>
             </div>
           </div>
 
           {historyList.length > 0 && (
             <button
               onClick={handleClearHistory}
-              className="p-1.5 rounded-lg bg-[#0a1128] border border-slate-700 text-slate-400 hover:text-red-400 hover:border-red-500/50 transition-colors"
-              title={t.timer.clearHistory || 'Obriši historiju'}
+              className="p-1.5 rounded-lg bg-[#0a1128] border border-slate-700 text-slate-400 hover:text-red-400 hover:border-red-500/50 transition-colors cursor-pointer"
+              title={t.timer.clearHistory}
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -266,7 +260,7 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
           {/* Day Total */}
           <div className="bg-[#0a1128] border border-[#d4af37]/30 rounded-xl p-3 text-center">
             <span className="text-[10px] text-slate-400 uppercase font-bold block mb-0.5">
-              {t.timer.dayTotal || 'Danas ukupno'}
+              {t.timer.dayTotal}
             </span>
             <span className="text-lg font-black text-[#d4af37] font-mono">
               {stats.dayTotal.toFixed(1)} KM
@@ -276,7 +270,7 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
           {/* Month Total */}
           <div className="bg-[#0a1128] border border-[#d4af37]/30 rounded-xl p-3 text-center">
             <span className="text-[10px] text-slate-400 uppercase font-bold block mb-0.5">
-              {t.timer.monthTotal || 'Ovaj mjesec'}
+              {t.timer.monthTotal}
             </span>
             <span className="text-lg font-black text-emerald-400 font-mono">
               {stats.monthTotal.toFixed(1)} KM
@@ -286,7 +280,7 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
           {/* Total Payments Count */}
           <div className="bg-[#0a1128] border border-slate-700/60 rounded-xl p-3 text-center">
             <span className="text-[10px] text-slate-400 uppercase font-bold block mb-0.5">
-              {t.timer.totalPayments || 'Transakcije'}
+              {t.timer.totalPayments}
             </span>
             <span className="text-lg font-black text-slate-100 font-mono">
               {stats.totalCount}
@@ -296,7 +290,7 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
           {/* Total Spent */}
           <div className="bg-[#0a1128] border border-slate-700/60 rounded-xl p-3 text-center">
             <span className="text-[10px] text-slate-400 uppercase font-bold block mb-0.5">
-              {t.timer.totalSpent || 'Ukupno'}
+              {t.timer.totalSpent}
             </span>
             <span className="text-lg font-black text-slate-200 font-mono">
               {stats.totalSpent.toFixed(1)} KM
@@ -307,12 +301,12 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
         {/* Previous Payment Items List */}
         <div className="space-y-2 pt-1">
           <span className="text-xs font-bold text-slate-300 block mb-2">
-            Zabilježena Plaćanja ({historyList.length})
+            {t.timer.recordedPayments} ({historyList.length})
           </span>
 
           {historyList.length === 0 ? (
             <div className="p-4 rounded-xl bg-[#0a1128] text-center text-xs text-slate-400 border border-slate-800">
-              {t.timer.noHistory || 'Nema zabilježenih prethodnih plaćanja.'}
+              {t.timer.noHistory}
             </div>
           ) : (
             <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
@@ -338,13 +332,13 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
                           className="px-2 py-0.5 rounded text-[10px] font-bold text-[#0a1128]"
                           style={{ backgroundColor: details?.color || '#d4af37' }}
                         >
-                          Zona {item.zone}
+                          {t.parkingList.zoneLabel} {item.zone}
                         </span>
                         <span className="text-[11px] text-slate-400 font-mono">{dateStr}</span>
                       </div>
 
                       <h4 className="text-xs font-bold text-slate-100 truncate">
-                        {item.parkingName || details?.name || `Zona ${item.zone}`}
+                        {item.parkingName || details?.name || `${t.parkingList.zoneLabel} ${item.zone}`}
                       </h4>
 
                       <div className="flex items-center gap-2 text-[11px] text-slate-300">
@@ -352,7 +346,7 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
                           {formatPlateDisplay(item.licensePlate)}
                         </span>
                         <span className="text-slate-500">•</span>
-                        <span>{item.isDayTicket ? 'Dnevna kartica' : `${item.hours}h`}</span>
+                        <span>{item.isDayTicket ? t.smsPayment.dayTicket : `${item.hours}${t.timer.hourShort}`}</span>
                       </div>
                     </div>
 
@@ -363,10 +357,10 @@ export const ActiveTimerWidget: React.FC<ActiveTimerWidgetProps> = ({
                       <a
                         href={smsUri}
                         className="px-2 py-1 rounded-md bg-[#14213d] hover:bg-[#d4af37] text-slate-200 hover:text-[#0a1128] border border-slate-700 text-[10px] font-bold flex items-center gap-1 transition-all"
-                        title="Ponovo pošalji SMS"
+                        title={t.timer.repaySms}
                       >
                         <Send className="w-3 h-3" />
-                        <span>{t.timer.repaySms || 'SMS'}</span>
+                        <span>{t.timer.repaySms}</span>
                       </a>
                     </div>
                   </div>

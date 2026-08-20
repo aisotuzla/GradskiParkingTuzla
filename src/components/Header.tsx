@@ -1,5 +1,5 @@
 import React from 'react';
-import { Clock, Car } from 'lucide-react';
+import { Clock, Download, Car } from 'lucide-react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../data/translations';
 import { isWorkingHoursNow, getTimeUntilWorkingHoursEnd } from '../services/smsService';
@@ -28,16 +28,18 @@ export const Header: React.FC<HeaderProps> = ({
   const timeRemainingHours = getTimeUntilWorkingHoursEnd();
 
   return (
-    <header className="sticky top-0 z-40 bg-gradient-to-r from-[#0a2557] via-[#081f4c] to-[#030816] backdrop-blur-2xl border-b border-[#d4af37]/40 shadow-2xl px-3 sm:px-4 py-3">
+    <header className="sticky top-0 z-40 bg-gradient-to-r from-[#0a2557] via-[#081f4c] to-[#030816] backdrop-blur-2xl border-b border-[#d4af37]/40 shadow-2xl px-3 sm:px-4 py-3 font-sans">
       <div className="max-w-md mx-auto flex items-center justify-between gap-2">
         {/* Title & Brand */}
         <div className="flex items-center gap-2.5">
+          {/* Download / Install App Button */}
           <button
             onClick={onInstallPwa}
-            className="w-10 h-10 bg-gradient-to-br from-[#ffd86b] via-[#d4af37] to-[#8f6a13] rounded-xl flex items-center justify-center shadow-lg shadow-[#d4af37]/20 shrink-0 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-[#fff5c0]/50"
-            title={deferredInstallPrompt ? t.pwa.installButton : 'Instaliraj Tuzla Parking'}
+            className="w-10 h-10 bg-gradient-to-br from-[#ffd86b] via-[#d4af37] to-[#8f6a13] rounded-xl flex items-center justify-center shadow-lg shadow-[#d4af37]/20 shrink-0 hover:scale-105 active:scale-95 transition-all cursor-pointer border border-[#fff5c0]/50 group"
+            title={t.header.installApp}
+            aria-label={t.header.installApp}
           >
-            <Car className="w-5 h-5 text-[#040e26]" />
+            <Download className="w-5 h-5 text-[#040e26] group-hover:bounce" />
           </button>
           <div>
             <div className="flex flex-col leading-none">
@@ -59,20 +61,22 @@ export const Header: React.FC<HeaderProps> = ({
                   title={isOnline ? t.pwa.onlineMode : t.pwa.offlineReady}
                 >
                   <span className={`h-1.5 w-1.5 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`}></span>
-                  <span>{isOnline ? 'LIVE' : 'OFFLINE'}</span>
+                  <span>{isOnline ? t.header.live : t.header.offline}</span>
                 </span>
               </div>
             </div>
             <p className="text-[11px] text-white flex items-center gap-1 mt-1 font-medium">
               <Clock className="w-3.5 h-3.5 text-[#ffd700]" />
               <span className={activeWorking ? 'text-emerald-300 font-semibold' : 'text-slate-300'}>
-                {activeWorking ? `Radno vrijeme do 22:00h (${timeRemainingHours})` : 'Van radnog vremena'}
+                {activeWorking
+                  ? `${t.header.workingHoursUntil} (${timeRemainingHours})`
+                  : t.header.offWorkingHours}
               </span>
             </p>
           </div>
         </div>
 
-        {/* Controls: Active Timer Badge + Language Switcher + PWA Install */}
+        {/* Controls: Active Timer Badge + Language Switcher */}
         <div className="flex items-center gap-1.5">
           {/* Active Parking Session Timer Button */}
           {activeTimerCount > 0 && (
@@ -88,8 +92,6 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           )}
 
-
-
           {/* Language Flag Selector */}
           <div className="flex bg-[#041530] rounded-full p-0.5 border border-[#d4af37]/70 shadow-[0_0_18px_rgba(29,78,216,0.22)]">
             {[
@@ -100,10 +102,11 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 key={code}
                 onClick={() => onLanguageChange(code as Language)}
-                className={`w-8 h-7 rounded-full transition-all flex items-center justify-center border ${currentLang === code
+                className={`w-8 h-7 rounded-full transition-all flex items-center justify-center border ${
+                  currentLang === code
                     ? 'bg-[#061d40] border-[#d4af37] shadow-md scale-105'
                     : 'bg-transparent border-transparent opacity-70 hover:opacity-100'
-                  }`}
+                }`}
                 title={title}
               >
                 <img src={flag} alt={title} className="w-5 h-5 rounded-full object-cover" />

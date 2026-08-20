@@ -11,9 +11,9 @@ import { NavigationDrawer } from './components/NavigationDrawer';
 import { ActiveTimerWidget } from './components/ActiveTimerWidget';
 import { VehicleManager } from './components/VehicleManager';
 import { QuickSmsPanel } from './components/QuickSmsPanel';
+import { PwaInstallModal } from './components/PwaInstallModal';
 import { getActiveSession, saveActiveSession } from './services/smsService';
 import { calculateRoute, generateOfflineRoute } from './services/routingService';
-
 
 // Center of Tuzla city coordinates (Trg slobode / Centar)
 const TUZLA_CENTER: UserLocation = { lat: 44.5385, lng: 18.6770 };
@@ -24,12 +24,12 @@ export default function App() {
   const [filterZone, setFilterZone] = useState<ParkingZone | 'all'>('all');
   const [selectedLot, setSelectedLot] = useState<ParkingLotData | null>(null);
   const [isPayModalOpen, setIsPayModalOpen] = useState<boolean>(false);
+  const [isPwaModalOpen, setIsPwaModalOpen] = useState<boolean>(false);
   const [activeRoute, setActiveRoute] = useState<NavigationRoute | null>(null);
   const [userLocation, setUserLocation] = useState<UserLocation | null>(null);
   const [activeSession, setActiveSession] = useState<ParkingPaymentSession | null>(getActiveSession());
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [deferredInstallPrompt, setDeferredInstallPrompt] = useState<any>(null);
-  // Voice modal state removed
 
   const notified10MinRef = React.useRef<boolean>(false);
   const notifiedExpiredRef = React.useRef<boolean>(false);
@@ -66,6 +66,15 @@ export default function App() {
     handleRequestLocation();
   }, []);
 
+  // Re-calculate route step texts if active language changes
+  useEffect(() => {
+    if (activeRoute && selectedLot) {
+      const loc = userLocation || TUZLA_CENTER;
+      const updatedRoute = generateOfflineRoute(loc, selectedLot, currentLang);
+      setActiveRoute(updatedRoute);
+    }
+  }, [currentLang]);
+
   // Periodically check active timer session expiry and notify user
   useEffect(() => {
     const interval = setInterval(() => {
@@ -79,10 +88,9 @@ export default function App() {
         if (remainingMs > 0 && remainingMs <= 10 * 60 * 1000 && !notified10MinRef.current) {
           notified10MinRef.current = true;
 
-          // Native Web Notification
           if ('Notification' in window && Notification.permission === 'granted') {
             try {
-              new Notification('Tuzla Parking — Tajmer Ističe!', {
+              new Notification('Gradski Parking Tuzla', {
                 body: `PAŽNJA: Vaš parking za vozilo ${session.licensePlate} ističe za manje od 10 minuta!`,
                 dir: 'auto',
               });
@@ -98,7 +106,7 @@ export default function App() {
 
           if ('Notification' in window && Notification.permission === 'granted') {
             try {
-              new Notification('Tuzla Parking — Parking Istekao!', {
+              new Notification('Gradski Parking Tuzla', {
                 body: `Vaš parking za vozilo ${session.licensePlate} je upravo istekao!`,
                 dir: 'auto',
               });
@@ -123,6 +131,8 @@ export default function App() {
         setDeferredInstallPrompt(null);
       });
     }
+    // Always open instruction modal so user has guaranteed option to download/install on any device
+    setIsPwaModalOpen(true);
   };
 
   const handleRequestLocation = async (): Promise<UserLocation | null> => {
@@ -130,30 +140,30 @@ export default function App() {
       return await new Promise((resolve) => {
         navigator.geolocation.getCurrentPosition(
           (position) => {
-          const rawLat = position?.coords?.latitude;
-          const rawLng = position?.coords?.longitude;
+            const rawLat = position?.coords?.latitude;
+            const rawLng = position?.coords?.longitude;
 
-          if (
-            typeof rawLat === 'number' &&
-            typeof rawLng === 'number' &&
-            !isNaN(rawLat) &&
-            !isNaN(rawLng) &&
-            isFinite(rawLat) &&
-            isFinite(rawLng)
-          ) {
-            const loc: UserLocation = {
-              lat: rawLat,
-              lng: rawLng,
-              accuracy: position.coords.accuracy,
-              heading: position.coords.heading || undefined,
-              speed: position.coords.speed || undefined,
-            };
-            setUserLocation(loc);
-            resolve(loc);
-          } else {
-            setUserLocation(TUZLA_CENTER);
-            resolve(TUZLA_CENTER);
-          }
+            if (
+              typeof rawLat === 'number' &&
+              typeof rawLng === 'number' &&
+              !isNaN(rawLat) &&
+              !isNaN(rawLng) &&
+              isFinite(rawLat) &&
+              isFinite(rawLng)
+            ) {
+              const loc: UserLocation = {
+                lat: rawLat,
+                lng: rawLng,
+                accuracy: position.coords.accuracy,
+                heading: position.coords.heading || undefined,
+                speed: position.coords.speed || undefined,
+              };
+              setUserLocation(loc);
+              resolve(loc);
+            } else {
+              setUserLocation(TUZLA_CENTER);
+              resolve(TUZLA_CENTER);
+            }
           },
           (error) => {
             console.warn('Geolocation access error, using Tuzla city center fallback', error);
@@ -173,14 +183,13 @@ export default function App() {
     setSelectedLot(lot);
     const startLoc = userLocation || (await handleRequestLocation()) || TUZLA_CENTER;
 
-    // Immediately open navigation mode and draw route on map
-    const instantRoute = generateOfflineRoute(startLoc, lot);
+    const instantRoute = generateOfflineRoute(startLoc, lot, currentLang);
     setActiveTab('map');
     setActiveRoute(instantRoute);
 
     if (navigator.onLine) {
       try {
-        const onlineRoute = await calculateRoute(startLoc, lot);
+        const onlineRoute = await calculateRoute(startLoc, lot, currentLang);
         if (onlineRoute && !onlineRoute.isOffline) {
           setActiveRoute(onlineRoute);
         }
@@ -219,11 +228,10 @@ export default function App() {
         onInstallPwa={handleInstallPwa}
         activeTimerCount={activeSession && activeSession.endTime > Date.now() ? 1 : 0}
         onOpenTimer={() => setActiveTab('timer')}
-        // Voice feature removed
       />
 
       {/* Main Screen Body */}
-      <main className="flex-1 relative overflow-hidden flex flex-col pb-14">
+      <main className="flex-1 relative overflow-hidden flex flex-col pb-14 font-sans">
         {activeRoute ? (
           /* Split Screen Navigation View: Upper 50% Map, Bottom 50% Navigation Drawer */
           <div className="w-full h-full flex flex-col overflow-hidden">
@@ -244,7 +252,7 @@ export default function App() {
               />
             </div>
 
-            {/* Bottom 50% of screen: Solid Blue Navigation Box, Golden Title, White Text */}
+            {/* Bottom 50% of screen: Navigation Drawer */}
             <div className="h-1/2 w-full bg-gradient-to-b from-[#10306d]/95 via-[#081f4c]/96 to-[#030816]/99 backdrop-blur-xl border-t-2 border-[#d4af37]/60 text-white z-30 opacity-100 overflow-hidden flex flex-col shadow-2xl">
               <NavigationDrawer
                 route={activeRoute}
@@ -314,19 +322,19 @@ export default function App() {
                     </div>
                     <div className="min-w-0">
                       <h3 className="font-bold text-sm text-[#d4af37] uppercase tracking-wide">
-                        SMS Plaćanje
+                        {t.smsPayment.title}
                       </h3>
                       <p className="text-[11px] text-slate-300 truncate">
-                        {selectedLot ? selectedLot.name : 'Odaberite zonu u SMS obrascu'}
+                        {selectedLot ? selectedLot.name : t.smsPayment.selectZone}
                       </p>
                     </div>
                   </div>
                   <button
                     onClick={() => handleOpenSmsPay(selectedLot || undefined)}
-                    className="w-full py-3.5 px-4 rounded-lg bg-[#d4af37] text-[#0a1128] font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:bg-[#b8860b] active:scale-95 transition-all"
+                    className="w-full py-3.5 px-4 rounded-lg bg-[#d4af37] text-[#0a1128] font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:bg-[#b8860b] active:scale-95 transition-all cursor-pointer"
                   >
                     <MessageSquare className="w-5 h-5 fill-current" />
-                    <span>Otvori SMS Plaćanje</span>
+                    <span>{t.smsPayment.openSmsPay}</span>
                   </button>
                 </div>
               </div>
@@ -355,16 +363,33 @@ export default function App() {
         currentLang={currentLang}
       />
 
+      {/* PWA Install Instructions Modal */}
+      <PwaInstallModal
+        isOpen={isPwaModalOpen}
+        onClose={() => setIsPwaModalOpen(false)}
+        deferredInstallPrompt={deferredInstallPrompt}
+        onNativeInstall={() => {
+          if (deferredInstallPrompt) {
+            deferredInstallPrompt.prompt();
+            deferredInstallPrompt.userChoice.then(() => {
+              setDeferredInstallPrompt(null);
+            });
+          }
+        }}
+        currentLang={currentLang}
+      />
+
       {/* Fixed Smartphone Bottom Navigation Bar */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-r from-[#0f2f66]/96 via-[#081c44]/97 to-[#030816]/99 backdrop-blur-xl border-t border-[#d4af37]/30 px-3 py-2 shadow-2xl h-14">
         <div className="max-w-md mx-auto grid grid-cols-5 gap-1 text-center">
           {/* Map Tab */}
           <button
             onClick={() => setActiveTab('map')}
-            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all ${activeTab === 'map'
-              ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
-              : 'text-slate-400 hover:text-slate-200'
-              }`}
+            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'map'
+                ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
           >
             <Map className="w-5 h-5 mb-0.5" />
             <span className="text-[10px] uppercase font-bold tracking-tight">{t.tabs.map}</span>
@@ -376,10 +401,11 @@ export default function App() {
               setActiveRoute(null);
               setActiveTab('list');
             }}
-            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all ${activeTab === 'list'
-              ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
-              : 'text-slate-400 hover:text-slate-200'
-              }`}
+            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'list'
+                ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
           >
             <List className="w-5 h-5 mb-0.5" />
             <span className="text-[10px] uppercase font-bold tracking-tight">{t.tabs.list}</span>
@@ -391,7 +417,7 @@ export default function App() {
               const payLot = selectedLot || TUZLA_PARKING_DATA[0];
               handleOpenSmsPay(payLot);
             }}
-            className="flex flex-col items-center justify-center py-1 rounded-xl bg-gradient-to-br from-[#ffd86b] via-[#d4af37] to-[#8f6a13] text-[#040c1a] font-black shadow-lg shadow-[#d4af37]/25 active:scale-95 transition-all -mt-3 border-2 border-[#0e2a52]"
+            className="flex flex-col items-center justify-center py-1 rounded-xl bg-gradient-to-br from-[#ffd86b] via-[#d4af37] to-[#8f6a13] text-[#040c1a] font-black shadow-lg shadow-[#d4af37]/25 active:scale-95 transition-all -mt-3 border-2 border-[#0e2a52] cursor-pointer"
           >
             <MessageSquare className="w-5 h-5 mb-0.5 fill-current" />
             <span className="text-[9px] uppercase font-black leading-none">{t.tabs.pay}</span>
@@ -403,10 +429,11 @@ export default function App() {
               setActiveRoute(null);
               setActiveTab('timer');
             }}
-            className={`relative flex flex-col items-center justify-center py-1 rounded-xl transition-all ${activeTab === 'timer'
-              ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
-              : 'text-slate-400 hover:text-slate-200'
-              }`}
+            className={`relative flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'timer'
+                ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
           >
             <Clock className="w-5 h-5 mb-0.5" />
             <span className="text-[10px] uppercase font-bold tracking-tight">{t.tabs.timer}</span>
@@ -421,10 +448,11 @@ export default function App() {
               setActiveRoute(null);
               setActiveTab('vehicle');
             }}
-            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all ${activeTab === 'vehicle'
-              ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
-              : 'text-slate-400 hover:text-slate-200'
-              }`}
+            className={`flex flex-col items-center justify-center py-1 rounded-xl transition-all cursor-pointer ${
+              activeTab === 'vehicle'
+                ? 'text-white font-bold bg-gradient-to-b from-[#1d4ed8] via-[#102a70] to-[#08153b] border border-[#d4af37]/55 shadow-[0_0_18px_rgba(29,78,216,0.35)] backdrop-blur-md'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
           >
             <Car className="w-5 h-5 mb-0.5" />
             <span className="text-[10px] uppercase font-bold tracking-tight">{t.tabs.vehicle}</span>

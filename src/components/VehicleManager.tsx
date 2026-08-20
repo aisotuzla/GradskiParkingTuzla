@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Car, Plus, Trash2, Shield, Info, Check, AlertCircle } from 'lucide-react';
+import { Car, Plus, Trash2, Info } from 'lucide-react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../data/translations';
 import { ZONE_DETAILS } from '../data/parkingData';
@@ -29,7 +29,7 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ currentLang }) =
   };
 
   return (
-    <div className="p-3 sm:p-4 max-w-md mx-auto space-y-4 pb-24 text-slate-100">
+    <div className="p-3 sm:p-4 max-w-md mx-auto space-y-4 pb-24 text-slate-100 font-sans">
       {/* Saved Vehicles Card */}
       <div className="bg-[#1a2a44] border border-[#d4af37]/30 rounded-2xl p-4 shadow-xl">
         <div className="flex items-center gap-3 mb-3 border-b border-slate-700/50 pb-2.5">
@@ -37,8 +37,8 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ currentLang }) =
             <Car className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-bold text-sm text-[#d4af37] uppercase tracking-wide">Moja Vozila / Tablice</h3>
-            <p className="text-[11px] text-slate-300">Spremljene registarske oznake za brže SMS plaćanje</p>
+            <h3 className="font-bold text-sm text-[#d4af37] uppercase tracking-wide">{t.vehicle.title}</h3>
+            <p className="text-[11px] text-slate-300">{t.vehicle.subtitle}</p>
           </div>
         </div>
 
@@ -48,22 +48,22 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ currentLang }) =
             type="text"
             value={newPlate}
             onChange={(e) => setNewPlate(e.target.value.toUpperCase())}
-            placeholder="Npr. A12-K-345"
+            placeholder={t.vehicle.inputPlaceholder}
             className="flex-1 bg-[#0a1128] border border-[#d4af37]/40 rounded-lg px-3 py-2 text-sm font-bold text-white focus:outline-none focus:border-[#d4af37]"
           />
           <button
             type="submit"
-            className="px-3.5 py-2 bg-[#d4af37] text-[#0a1128] rounded-lg font-bold text-xs flex items-center gap-1 hover:bg-[#b8860b] active:scale-95 transition-all shadow-md"
+            className="px-3.5 py-2 bg-[#d4af37] text-[#0a1128] rounded-lg font-bold text-xs flex items-center gap-1 hover:bg-[#b8860b] active:scale-95 transition-all shadow-md cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Dodaj</span>
+            <span>{t.vehicle.add}</span>
           </button>
         </form>
 
         {/* List of Saved Plates */}
         <div className="space-y-2">
           {plates.length === 0 ? (
-            <p className="text-xs text-slate-400 text-center py-4">Nema spremljenih tablica.</p>
+            <p className="text-xs text-slate-400 text-center py-4">{t.vehicle.noSavedPlates}</p>
           ) : (
             plates.map((p) => (
               <div
@@ -79,8 +79,8 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ currentLang }) =
 
                 <button
                   onClick={() => handleDeletePlate(p)}
-                  className="p-1.5 text-slate-400 hover:text-red-400 transition-colors"
-                  title="Obriši"
+                  className="p-1.5 text-slate-400 hover:text-red-400 transition-colors cursor-pointer"
+                  title={t.vehicle.delete}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -97,8 +97,8 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ currentLang }) =
             <Info className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-bold text-sm text-[#d4af37] uppercase tracking-wide">Cjenovnik & Brojevi Zona</h3>
-            <p className="text-[11px] text-slate-300">Javni Gradski Parking Tuzla</p>
+            <h3 className="font-bold text-sm text-[#d4af37] uppercase tracking-wide">{t.vehicle.priceListTitle}</h3>
+            <p className="text-[11px] text-slate-300">{t.vehicle.priceListSubtitle}</p>
           </div>
         </div>
 
@@ -113,13 +113,13 @@ export const VehicleManager: React.FC<VehicleManagerProps> = ({ currentLang }) =
                   {zone.name}
                 </div>
                 <div className="text-[11px] text-slate-300 mt-0.5">
-                  Sat: <span className="font-bold text-white">{zone.hourlyPrice.toFixed(1)} KM</span> •
-                  Dan: <span className="font-bold text-white">{zone.dailyPrice.toFixed(1)} KM</span>
+                  {t.vehicle.hour}: <span className="font-bold text-white">{zone.hourlyPrice.toFixed(1)} KM</span> •{' '}
+                  {t.vehicle.day}: <span className="font-bold text-white">{zone.dailyPrice.toFixed(1)} KM</span>
                 </div>
               </div>
 
               <div className="text-right">
-                <span className="text-[10px] text-slate-400 block uppercase font-bold">SMS Broj</span>
+                <span className="text-[10px] text-slate-400 block uppercase font-bold">{t.vehicle.smsNumber}</span>
                 <span className="text-xs font-black font-mono text-[#d4af37] bg-[#0a1128] px-2 py-1 rounded-md border border-slate-700/60">
                   {zone.shortCode}
                 </span>

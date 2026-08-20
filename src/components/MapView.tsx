@@ -4,6 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Language, NavigationRoute, ParkingLotData, ParkingZone, UserLocation } from '../types';
 import { ZONE_DETAILS } from '../data/parkingData';
+import { TRANSLATIONS } from '../data/translations';
 
 interface MapViewProps {
   parkingLots: ParkingLotData[];
@@ -28,10 +29,11 @@ export const MapView: React.FC<MapViewProps> = ({
   userLocation,
   onRequestUserLocation,
   activeRoute,
-  currentLang: _currentLang,
+  currentLang,
   filterZone,
   onFilterZoneChange,
 }) => {
+  const t = TRANSLATIONS[currentLang];
   const [mapStyle, setMapStyle] = useState<'online' | 'offline'>('online');
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -84,11 +86,11 @@ export const MapView: React.FC<MapViewProps> = ({
     setMapStyle('online');
   };
 
-  // Initialise Leaflet map with Carto raster tiles, then fall back to local tiles after a real offline delay.
+  // Initialise Leaflet map with Carto raster tiles
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
     const map = L.map(mapContainerRef.current, {
-      center: [44.538, 18.675], // lat, lng
+      center: [44.538, 18.675],
       zoom: 14,
       minZoom: 3,
       maxZoom: 20,
@@ -172,7 +174,7 @@ export const MapView: React.FC<MapViewProps> = ({
     };
   }, []);
 
-  // GeoJSON parking zones (shown when filterZone === 'all')
+  // GeoJSON parking zones
   const geoJsonLayerRef = useRef<L.GeoJSON | null>(null);
   const geoJsonDataRef = useRef<any>(null);
 
@@ -223,22 +225,20 @@ export const MapView: React.FC<MapViewProps> = ({
     }
   }, [filterZone]);
 
-  // Parking markers (hidden when filterZone === 'all', shown for specific zone buttons)
+  // Parking markers
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
-    // Clear existing markers
+
     Object.values(markersRef.current).forEach(m => m.remove());
     markersRef.current = {};
 
     if (filterZone === 'all') {
-      // Hide all other markers when "Sve" / "All" is active
       return;
     }
 
     const filtered = parkingLots.filter(lot => lot.zone === filterZone);
     filtered.forEach(lot => {
-      // coordinates in parkingData are [lng, lat] (e.g., [18.67, 44.53])
       const lng = Number(lot.coordinates?.[0]);
       const lat = Number(lot.coordinates?.[1]);
       if (isNaN(lng) || isNaN(lat)) return;
@@ -250,11 +250,11 @@ export const MapView: React.FC<MapViewProps> = ({
 
       const icon = L.divIcon({ className: '', html: div.outerHTML, iconSize: [32, 32], iconAnchor: [16, 32] });
       const marker = L.marker([lat, lng], { icon }).addTo(map);
-      
+
       const popupHtml = `
-        <div class="p-3.5 bg-gradient-to-br from-[#091d42] via-[#06142e] to-[#030914] text-white rounded-2xl border border-[#d4af37]/40 shadow-2xl min-w-[210px] max-w-[260px]">
+        <div class="p-3.5 bg-gradient-to-br from-[#091d42] via-[#06142e] to-[#030914] text-white rounded-2xl border border-[#d4af37]/40 shadow-2xl min-w-[210px] max-w-[260px] font-sans">
           <span class="inline-flex px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-[#d4af37]/20 text-[#f5d77f] border border-[#d4af37]/40 mb-1">
-            Zona ${lot.zone}
+            ${t.parkingList.zoneLabel} ${lot.zone}
           </span>
           <h3 class="font-black text-sm sm:text-base text-white leading-tight mb-0.5 truncate">${lot.name}</h3>
           <p class="text-[11px] text-slate-300 mb-3 truncate leading-snug">${lot.address}</p>
@@ -263,7 +263,7 @@ export const MapView: React.FC<MapViewProps> = ({
               type="button"
               data-map-action="sms"
               data-lot-id="${lot.id}"
-              class="h-9 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3e5ab] to-[#b8860b] text-[#030914] font-black text-xs border border-[#ffe58f] shadow-md active:scale-95"
+              class="h-9 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3e5ab] to-[#b8860b] text-[#030914] font-black text-xs border border-[#ffe58f] shadow-md active:scale-95 cursor-pointer"
             >
               SMS
             </button>
@@ -271,14 +271,14 @@ export const MapView: React.FC<MapViewProps> = ({
               type="button"
               data-map-action="gps"
               data-lot-id="${lot.id}"
-              class="h-9 rounded-xl bg-gradient-to-r from-[#1d4ed8] to-[#1e3a8a] text-white font-black text-xs border border-[#60a5fa]/40 shadow-md active:scale-95"
+              class="h-9 rounded-xl bg-gradient-to-r from-[#1d4ed8] to-[#1e3a8a] text-white font-black text-xs border border-[#60a5fa]/40 shadow-md active:scale-95 cursor-pointer"
             >
               GPS
             </button>
           </div>
         </div>
       `;
-      
+
       marker.bindPopup(popupHtml);
       marker.on('popupopen', () => {
         const popupElement = marker.getPopup()?.getElement();
@@ -292,7 +292,7 @@ export const MapView: React.FC<MapViewProps> = ({
       });
       markersRef.current[lot.id] = marker;
     });
-  }, [parkingLots, filterZone]);
+  }, [parkingLots, filterZone, t]);
 
   useEffect(() => {
     const handlePopupAction = async (event: MouseEvent) => {
@@ -321,13 +321,11 @@ export const MapView: React.FC<MapViewProps> = ({
     return () => document.removeEventListener('click', handlePopupAction, true);
   }, [parkingLots]);
 
-  // Highlight selected lot and fly to it (only if no active navigation route)
   useEffect(() => {
     if (!selectedLot || activeRoute) return;
     const marker = markersRef.current[selectedLot.id];
     if (marker) {
       marker.openPopup();
-      // coordinates are [lng, lat]
       const lng = Number(selectedLot.coordinates?.[0]);
       const lat = Number(selectedLot.coordinates?.[1]);
       if (!isNaN(lat) && !isNaN(lng)) {
@@ -336,7 +334,6 @@ export const MapView: React.FC<MapViewProps> = ({
     }
   }, [selectedLot, activeRoute]);
 
-  // User location marker
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -353,7 +350,6 @@ export const MapView: React.FC<MapViewProps> = ({
     }
   }, [userLocation]);
 
-  // Route polyline
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -364,7 +360,7 @@ export const MapView: React.FC<MapViewProps> = ({
     if (activeRoute?.coordinates?.length) {
       const coords = activeRoute.coordinates
         .filter(c => Array.isArray(c) && c.length >= 2 && !isNaN(c[0]) && !isNaN(c[1]))
-        .map(c => [c[0], c[1]] as [number, number]); // route coordinates are already [lat, lng]
+        .map(c => [c[0], c[1]] as [number, number]);
       const poly = L.polyline(coords, {
         color: '#1677ff',
         weight: 6,
@@ -383,33 +379,47 @@ export const MapView: React.FC<MapViewProps> = ({
       <button
         type="button"
         onClick={handleToggleMapStyle}
-        className="absolute bottom-6 left-3 z-30 w-9 h-9 rounded-full bg-[#061d40]/95 backdrop-blur-md border border-[#d4af37]/40 text-[#ffd77a] shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex items-center justify-center active:scale-95"
+        className="absolute bottom-6 left-3 z-30 w-9 h-9 rounded-full bg-[#061d40]/95 backdrop-blur-md border border-[#d4af37]/40 text-[#ffd77a] shadow-[0_10px_30px_rgba(0,0,0,0.35)] flex items-center justify-center active:scale-95 cursor-pointer"
         aria-label={`Switch to ${mapStyle === 'online' ? 'offline' : 'online'} map style`}
         title={`Switch to ${mapStyle === 'online' ? 'offline' : 'online'} map style`}
       >
         <Map className="w-4 h-4" />
       </button>
+
       {/* Zone filter bar */}
       <div className="absolute top-3 left-3 z-30 flex items-center justify-start pointer-events-none">
-        <div className="pointer-events-auto flex gap-1 bg-[#061d40]/95 backdrop-blur-md p-1 rounded-full border border-[#d4af37]/40 shadow-[0_0_0_1px_rgba(255,229,143,0.08),0_10px_30px_rgba(0,0,0,0.35)]">
+        <div className="pointer-events-auto flex gap-1 bg-[#061d40]/95 backdrop-blur-md p-1 rounded-full border border-[#d4af37]/40 shadow-[0_0_0_1px_rgba(255,229,143,0.08),0_10px_30px_rgba(0,0,0,0.35)] font-sans">
           <button
             onClick={() => onFilterZoneChange('all')}
-            className={`px-2 py-1 rounded-full text-xs font-bold transition-all ${filterZone === 'all' ? 'bg-gradient-to-r from-[#1d4ed8] via-[#1e3a8a] to-[#08153b] text-white border border-[#d4af37]/50 shadow-[0_0_18px_rgba(29,78,216,0.35)]' : 'text-slate-300 hover:text-white'}`}
-          >SVE</button>
+            className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              filterZone === 'all'
+                ? 'bg-gradient-to-r from-[#1d4ed8] via-[#1e3a8a] to-[#08153b] text-white border border-[#d4af37]/50 shadow-[0_0_18px_rgba(29,78,216,0.35)]'
+                : 'text-slate-300 hover:text-white'
+            }`}
+          >
+            {t.zones.all}
+          </button>
           {(['0', '1', '2'] as ParkingZone[]).map(zone => (
             <button
               key={zone}
               onClick={() => onFilterZoneChange(zone)}
-              className={`px-2 py-1 rounded-full border text-xs font-bold transition-all ${filterZone === zone ? 'bg-gradient-to-r from-[#1d4ed8] via-[#1e3a8a] to-[#08153b] text-white border-[#d4af37]/60 shadow-[0_0_18px_rgba(212,175,55,0.22)]' : 'bg-[#041530] border-[#d4af37]/30 text-[#ffd77a]'}`}
-            >Z{zone}</button>
+              className={`px-2.5 py-1 rounded-full border text-xs font-bold transition-all cursor-pointer ${
+                filterZone === zone
+                  ? 'bg-gradient-to-r from-[#1d4ed8] via-[#1e3a8a] to-[#08153b] text-white border-[#d4af37]/60 shadow-[0_0_18px_rgba(212,175,55,0.22)]'
+                  : 'bg-[#041530] border-[#d4af37]/30 text-[#ffd77a]'
+              }`}
+            >
+              Z{zone}
+            </button>
           ))}
         </div>
       </div>
+
       <div className="absolute top-3 right-3 z-30 pointer-events-auto flex flex-col gap-1 bg-[#061d40]/95 backdrop-blur-md p-0.5 rounded-full border border-[#d4af37]/40 shadow-[0_0_0_1px_rgba(255,229,143,0.08),0_10px_30px_rgba(0,0,0,0.35)]">
         <button
           type="button"
           onClick={handleZoomIn}
-          className="w-7 h-7 rounded-full bg-[#041530] border border-[#d4af37]/30 text-[#d4af37] flex items-center justify-center hover:bg-[#062844] transition-colors active:scale-95"
+          className="w-7 h-7 rounded-full bg-[#041530] border border-[#d4af37]/30 text-[#d4af37] flex items-center justify-center hover:bg-[#062844] transition-colors active:scale-95 cursor-pointer"
           aria-label="Zoom in"
           title="Zoom in"
         >
@@ -418,7 +428,7 @@ export const MapView: React.FC<MapViewProps> = ({
         <button
           type="button"
           onClick={handleZoomOut}
-          className="w-7 h-7 rounded-full bg-[#041530] border border-[#d4af37]/30 text-[#d4af37] flex items-center justify-center hover:bg-[#062844] transition-colors active:scale-95"
+          className="w-7 h-7 rounded-full bg-[#041530] border border-[#d4af37]/30 text-[#d4af37] flex items-center justify-center hover:bg-[#062844] transition-colors active:scale-95 cursor-pointer"
           aria-label="Zoom out"
           title="Zoom out"
         >

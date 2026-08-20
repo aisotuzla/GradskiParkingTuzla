@@ -1,5 +1,6 @@
-import { NavigationRoute, ParkingLotData, RouteStep, UserLocation } from '../types';
+import { Language, NavigationRoute, ParkingLotData, RouteStep, UserLocation } from '../types';
 import { TUZLA_OFFLINE_ROAD_NODES } from '../data/parkingData';
+import { TRANSLATIONS } from '../data/translations';
 
 const GEOAPIFY_API_KEY =
   import.meta.env.GEOAPIFY_ROUTING_API ||
@@ -55,8 +56,10 @@ export function formatDuration(seconds: number): string {
 
 export async function calculateRoute(
   startLoc: UserLocation,
-  targetLot: ParkingLotData
+  targetLot: ParkingLotData,
+  lang: Language = 'bs'
 ): Promise<NavigationRoute> {
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.bs;
   const safeStartLat = typeof startLoc?.lat === 'number' && !isNaN(startLoc.lat) && isFinite(startLoc.lat) ? startLoc.lat : 44.5385;
   const safeStartLng = typeof startLoc?.lng === 'number' && !isNaN(startLoc.lng) && isFinite(startLoc.lng) ? startLoc.lng : 18.6770;
   const rawDestLng = Number(targetLot?.coordinates?.[0]);
@@ -109,7 +112,7 @@ export async function calculateRoute(
           if (properties.legs && properties.legs[0] && properties.legs[0].steps) {
             properties.legs[0].steps.forEach((s: any) => {
               steps.push({
-                instruction: s.instruction ? s.instruction.text : 'Nastavite vožnju',
+                instruction: s.instruction ? s.instruction.text : t.navigation.continueDriving,
                 distance: Math.round(s.distance || 0),
                 time: Math.round(s.time || 0),
                 action: parseActionType(s.instruction ? s.instruction.text : ''),
@@ -119,7 +122,7 @@ export async function calculateRoute(
 
           if (steps.length === 0) {
             steps.push({
-              instruction: `Vozite prema ${targetLot.name}, ${targetLot.address}`,
+              instruction: `${t.navigation.continueDriving} -> ${targetLot.name}, ${targetLot.address}`,
               distance: Math.round(properties.distance || 0),
               time: Math.round(properties.time || 0),
               action: 'straight',
@@ -154,23 +157,25 @@ export async function calculateRoute(
   }
 
   // Fallback to Offline Navigation Corridor algorithm
-  return generateOfflineRoute(safeStartLoc, targetLot);
+  return generateOfflineRoute(safeStartLoc, targetLot, lang);
 }
 
 function parseActionType(
   instruction: string
 ): 'straight' | 'turn-left' | 'turn-right' | 'slight-left' | 'slight-right' | 'u-turn' | 'arrive' {
   const lower = instruction.toLowerCase();
-  if (lower.includes('left') || lower.includes('lijevo')) return 'turn-left';
-  if (lower.includes('right') || lower.includes('desno')) return 'turn-right';
-  if (lower.includes('arrive') || lower.includes('stigli')) return 'arrive';
+  if (lower.includes('left') || lower.includes('lijevo') || lower.includes('links')) return 'turn-left';
+  if (lower.includes('right') || lower.includes('desno') || lower.includes('rechts')) return 'turn-right';
+  if (lower.includes('arrive') || lower.includes('stigli') || lower.includes('angekommen')) return 'arrive';
   return 'straight';
 }
 
 export function generateOfflineRoute(
   startLoc: UserLocation,
-  targetLot: ParkingLotData
+  targetLot: ParkingLotData,
+  lang: Language = 'bs'
 ): NavigationRoute {
+  const t = TRANSLATIONS[lang] || TRANSLATIONS.bs;
   const safeStartLat = typeof startLoc?.lat === 'number' && !isNaN(startLoc.lat) ? startLoc.lat : 44.5385;
   const safeStartLng = typeof startLoc?.lng === 'number' && !isNaN(startLoc.lng) ? startLoc.lng : 18.6770;
   const rawDestLng = targetLot?.coordinates?.[0];
@@ -245,25 +250,25 @@ export function generateOfflineRoute(
 
   const steps: RouteStep[] = [
     {
-      instruction: `Krenite od trenutne lokacije prema glavnoj saobraćajnici.`,
+      instruction: t.navigation.headTowardsMainRoad,
       distance: Math.round(totalDistance * 0.2),
       time: Math.round(estDuration * 0.2),
       action: 'straight',
     },
     {
-      instruction: `Pratite koridor saobraćajnice prema području ${targetLot.area}.`,
+      instruction: `${t.navigation.followCorridorTowards} ${targetLot.area}.`,
       distance: Math.round(totalDistance * 0.6),
       time: Math.round(estDuration * 0.6),
       action: 'straight',
     },
     {
-      instruction: `Skrenite prema ${targetLot.address}.`,
+      instruction: `${t.navigation.turnTowards} ${targetLot.address}.`,
       distance: Math.round(totalDistance * 0.2),
       time: Math.round(estDuration * 0.2),
       action: 'turn-right',
     },
     {
-      instruction: `Stigli ste na ${targetLot.name}!`,
+      instruction: `${t.navigation.arrived} (${targetLot.name})`,
       distance: 0,
       time: 0,
       action: 'arrive',

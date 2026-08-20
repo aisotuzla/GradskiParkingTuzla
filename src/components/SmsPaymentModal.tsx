@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Send, Copy, Check, Clock, ShieldCheck, Car, AlertTriangle, MessageSquare } from 'lucide-react';
+import { X, Send, Copy, Check, AlertTriangle, MessageSquare, Car } from 'lucide-react';
 import { Language, ParkingLotData, ParkingPaymentSession, ParkingZone } from '../types';
 import { ZONE_DETAILS, getSmsNumber } from '../data/parkingData';
 import { TRANSLATIONS } from '../data/translations';
@@ -57,7 +57,6 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
 
   if (!isOpen) return null;
 
-  const currentZoneDetails = ZONE_DETAILS[activeZone];
   const activeSmsNumber = getSmsNumber(activeZone, isDayTicket);
   const totalPrice = calculateParkingCost(activeZone, hours, isDayTicket);
   const cleanPlate = sanitizePlate(licensePlate);
@@ -66,7 +65,7 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
 
   const handleSendSms = () => {
     if (!cleanPlate || cleanPlate.length < 3) {
-      alert('Molimo unesite ispravnu registarsku oznaku (npr. E12M345)');
+      alert(t.smsPayment.invalidPlateAlert);
       return;
     }
 
@@ -87,7 +86,7 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
 
   const handleCopySms = () => {
     if (!cleanPlate) return;
-    const textToCopy = `SMS Broj: ${activeSmsNumber}\nTekst: ${cleanPlate}`;
+    const textToCopy = `SMS: ${activeSmsNumber}\n${cleanPlate}`;
     navigator.clipboard.writeText(textToCopy);
     setCopied(true);
 
@@ -124,7 +123,7 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-full bg-[#0b1a45] text-slate-300 hover:text-white transition-colors border border-slate-700/50"
+            className="p-1.5 rounded-full bg-[#0b1a45] text-slate-300 hover:text-white transition-colors border border-slate-700/50 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -160,7 +159,7 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
                   key={zone}
                   type="button"
                   onClick={() => setActiveZone(zone)}
-                  className={`p-3 rounded-xl border text-center transition-all ${zoneColor} ${
+                  className={`p-3 rounded-xl border text-center transition-all cursor-pointer ${zoneColor} ${
                     isSelected
                       ? 'bg-[#08224d] border-[#d4af37] ring-1 ring-[#d4af37] text-white font-bold shadow-lg'
                       : 'bg-[#061938]/60 text-slate-400 hover:bg-[#08224d]'
@@ -169,10 +168,10 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
                   <div className={`text-xs font-black uppercase tracking-wider ${
                     zone === '0' ? 'text-red-400' : zone === '1' ? 'text-sky-400' : 'text-emerald-400'
                   }`}>
-                    Zona {zone}
+                    {t.parkingList.zoneLabel} {zone}
                   </div>
                   <div className="text-xs font-bold text-slate-200 mt-1">
-                    {details.hourlyPrice.toFixed(1)} KM/h
+                    {details.hourlyPrice.toFixed(1)} {t.zones.pricePerHour}
                   </div>
                   <div className="text-[10px] text-slate-300 font-mono mt-0.5 font-bold">
                     {zoneSmsNum}
@@ -187,7 +186,7 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
         <div className="mb-4">
           <label className="block text-xs font-bold text-[#d4af37] uppercase tracking-wider mb-2 flex items-center justify-between">
             <span>2. {t.smsPayment.licensePlateLabel}</span>
-            <span className="text-[10px] text-slate-400 font-normal">npr. E12-M-345</span>
+            <span className="text-[10px] text-slate-400 font-normal">e.g. E12-M-345</span>
           </label>
           <div className="relative">
             <Car className="absolute left-3 top-3 w-4 h-4 text-[#d4af37]" />
@@ -209,7 +208,7 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
                   key={plate}
                   type="button"
                   onClick={() => setLicensePlate(plate)}
-                  className={`px-2 py-0.5 rounded text-[11px] font-mono border transition-colors ${
+                  className={`px-2 py-0.5 rounded text-[11px] font-mono border transition-colors cursor-pointer ${
                     sanitizePlate(licensePlate) === sanitizePlate(plate)
                       ? 'bg-[#d4af37] text-[#0a1128] font-bold border-[#d4af37]'
                       : 'bg-[#1a2a44] text-slate-300 border-slate-700 hover:bg-slate-800'
@@ -236,25 +235,25 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
                   setHours(h);
                   setIsDayTicket(false);
                 }}
-                className={`py-2 rounded-lg text-xs font-bold border transition-all ${
+                className={`py-2 rounded-lg text-xs font-bold border transition-all cursor-pointer ${
                   !isDayTicket && hours === h
                     ? 'bg-[#d4af37] text-[#0a1128] border-[#d4af37] shadow-md'
                     : 'bg-[#14213d] text-slate-300 border-slate-700 hover:bg-[#1a2a44]'
                 }`}
               >
-                {h}h
+                {h}{t.timer.hourShort}
               </button>
             ))}
             <button
               type="button"
               onClick={() => setIsDayTicket(true)}
-              className={`py-2 rounded-lg text-[11px] font-bold border transition-all ${
+              className={`py-2 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
                 isDayTicket
                   ? 'bg-[#d4af37] text-[#0a1128] border-[#d4af37] shadow-md'
                   : 'bg-[#14213d] text-slate-300 border-slate-700 hover:bg-[#1a2a44]'
               }`}
             >
-              Dnevna
+              {t.smsPayment.dayTicket}
             </button>
           </div>
         </div>
@@ -277,7 +276,7 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
         <div className="space-y-2">
           <button
             onClick={handleSendSms}
-            className="w-full py-3.5 px-4 rounded-lg bg-[#d4af37] text-[#0a1128] font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:bg-[#b8860b] active:scale-95 transition-all"
+            className="w-full py-3.5 px-4 rounded-lg bg-[#d4af37] text-[#0a1128] font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:bg-[#b8860b] active:scale-95 transition-all cursor-pointer"
           >
             <Send className="w-4 h-4 fill-current" />
             <span>{t.smsPayment.sendSmsButton}</span>
@@ -285,7 +284,7 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
 
           <button
             onClick={handleCopySms}
-            className="w-full py-2.5 px-4 rounded-lg bg-[#14213d] border border-slate-700 text-slate-200 font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#1a2a44] transition-colors"
+            className="w-full py-2.5 px-4 rounded-lg bg-[#14213d] border border-slate-700 text-slate-200 font-bold text-xs flex items-center justify-center gap-2 hover:bg-[#1a2a44] transition-colors cursor-pointer"
           >
             {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4 text-[#d4af37]" />}
             <span>{copied ? t.smsPayment.copied : t.smsPayment.copySms}</span>

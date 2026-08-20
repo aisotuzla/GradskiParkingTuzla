@@ -28,8 +28,6 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
 }) => {
   const t = TRANSLATIONS[currentLang];
 
-
-
   if (!route) return null;
 
   const { targetLot, distance, duration, steps, isOffline } = route;
@@ -47,10 +45,8 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
     }
   };
 
-
-
   return (
-    <div className="w-full h-full bg-gradient-to-b from-[#0c2b63] via-[#081f4c] to-[#030816] border-t-2 border-[#d4af37]/60 text-white p-3 sm:p-4 flex flex-col justify-between overflow-hidden z-30 opacity-100 shadow-2xl">
+    <div className="w-full h-full bg-gradient-to-b from-[#0c2b63] via-[#081f4c] to-[#030816] border-t-2 border-[#d4af37]/60 text-white p-3 sm:p-4 flex flex-col justify-between overflow-hidden z-30 opacity-100 shadow-2xl font-sans">
       {/* Top Bar: Title & Controls */}
       <div className="flex items-center justify-between border-b border-[#d4af37]/30 pb-2 mb-2 shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
@@ -65,7 +61,7 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
               {isOffline && (
                 <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/30 text-amber-200 border border-amber-500/50 flex items-center gap-0.5">
                   <WifiOff className="w-2.5 h-2.5" />
-                  Offline
+                  {t.header.offline}
                 </span>
               )}
             </div>
@@ -80,7 +76,7 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
           <button
             onClick={onStopNavigation}
             className="p-1.5 rounded-full bg-[#041530] text-white hover:bg-red-600 transition-colors border border-[#d4af37]/25"
-            title="Zaustavi Navigaciju"
+            title={t.navigation.stopNav}
           >
             <X className="w-5 h-5" />
           </button>
@@ -138,10 +134,7 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
       {/* Action Buttons Row */}
       <div className="grid grid-cols-2 gap-2 shrink-0 pt-1 border-t border-[#d4af37]/30">
         <button
-          onClick={() => {
-            window.speechSynthesis?.cancel();
-            onStopNavigation();
-          }}
+          onClick={onStopNavigation}
           className="py-2.5 px-3 rounded-xl bg-[#041530] border border-red-500/60 text-white font-bold text-xs hover:bg-red-950/40 transition-colors shadow-md text-center"
         >
           {t.navigation.stopNav}
@@ -152,7 +145,7 @@ export const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
           className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#ffd86b] via-[#d4af37] to-[#8f6a13] text-[#061d40] font-black text-xs flex items-center justify-center gap-1.5 shadow-lg hover:brightness-110 active:scale-95 transition-all text-center"
         >
           <MessageSquare className="w-4 h-4 fill-current" />
-          <span>Stigao sam - SMS</span>
+          <span>{t.navigation.arrivedSms}</span>
         </button>
       </div>
     </div>
