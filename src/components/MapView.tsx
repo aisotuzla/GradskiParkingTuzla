@@ -34,6 +34,62 @@ export const MapView: React.FC<MapViewProps> = ({
   onFilterZoneChange,
 }) => {
   const t = TRANSLATIONS[currentLang];
+  
+  // Parking markers
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    Object.values(markersRef.current).forEach(m => m.remove());
+    markersRef.current = {};
+
+    if (filterZone === 'all') {
+      return;
+    }
+
+    const filtered = parkingLots.filter(lot => lot.zone === filterZone);
+    filtered.forEach(lot => {
+      const lng = Number(lot.coordinates?.[0]);
+      const lat = Number(lot.coordinates?.[1]);
+      if (isNaN(lng) || isNaN(lat)) return;
+
+      const details = ZONE_DETAILS[lot.zone];
+      const div = document.createElement('div');
+      div.className = 'relative cursor-pointer z-10';
+      div.innerHTML = `<div class="flex flex-col items-center"><div class="w-8 h-8 rounded-full bg-[#08182e] border-2 flex items-center justify-center" style="border-color:${details.color}"><span class="text-[11px] font-black text-[#d4af37]">Z${lot.zone}</span></div></div>`;
+
+      const icon = L.divIcon({ className: '', html: div.outerHTML, iconSize: [32, 32], iconAnchor: [16, 32] });
+      const marker = L.marker([lat, lng], { icon }).addTo(map);
+
+      const popupHtml = `
+        <div class="p-3.5 bg-gradient-to-br from-[#091d42] via-[#06142e] to-[#030914] text-white rounded-2xl border border-[#d4af37]/40 shadow-2xl min-w-[210px] max-w-[260px] font-sans">
+          <span class="inline-flex px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider bg-[#d4af37]/20 text-[#f5d77f] border border-[#d4af37]/40 mb-1">
+            ${t.parkingList.zoneLabel} ${lot.zone}
+          </span>
+          <h3 class="font-black text-sm sm:text-base text-white leading-tight mb-0.5 truncate">${lot.name}</h3>
+          <p class="text-[11px] text-slate-300 mb-3 truncate leading-snug">${lot.address}</p>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" data-map-action="sms" data-lot-id="${lot.id}" class="h-9 rounded-xl bg-gradient-to-r from-[#d4af37] via-[#f3e5ab] to-[#b8860b] text-[#030914] font-black text-xs border border-[#ffe58f] shadow-md active:scale-95 cursor-pointer">SMS</button>
+            <button type="button" data-map-action="gps" data-lot-id="${lot.id}" class="h-9 rounded-xl bg-gradient-to-r from-[#1d4ed8] to-[#1e3a8a] text-white font-black text-xs border border-[#60a5fa]/40 shadow-md active:scale-95 cursor-pointer">GPS</button>
+          </div>
+        </div>
+      `;
+
+      marker.bindPopup(popupHtml);
+      marker.on('popupopen', () => {
+        const popupElement = marker.getPopup()?.getElement();
+        if (popupElement) {
+          L.DomEvent.disableClickPropagation(popupElement);
+          L.DomEvent.disableScrollPropagation(popupElement);
+        }
+      });
+      marker.on('click', () => {
+        onSelectLotRef.current(lot);
+      });
+      markersRef.current[lot.id] = marker;
+    });
+  }, [parkingLots, filterZone]);
+  const CARTO_TOKEN = import.meta.env.VITE_CARTO_MAP_API;
   const [mapStyle, setMapStyle] = useState<'online' | 'offline'>('online');
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
@@ -90,7 +146,7 @@ export const MapView: React.FC<MapViewProps> = ({
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
     const map = L.map(mapContainerRef.current, {
-      center: [44.538, 18.675],
+      center: [44.538012, 18.675112],
       zoom: 14,
       minZoom: 3,
       maxZoom: 20,
@@ -98,7 +154,7 @@ export const MapView: React.FC<MapViewProps> = ({
     });
 
     const onlineLayer = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?api_key=${encodeURIComponent(CARTO_TOKEN)}`,
       {
         subdomains: 'abcd',
         minZoom: 3,
@@ -108,6 +164,9 @@ export const MapView: React.FC<MapViewProps> = ({
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
       }
     );
+    if (!CARTO_TOKEN) {
+      console.warn('CARTO token is missing – map may show "API KEY REQUIRED" watermark');
+    }
 
     const offlineLayer = L.tileLayer('/tile/{z}/{x}/{y}.webp', {
       minZoom: 14,
@@ -391,11 +450,10 @@ export const MapView: React.FC<MapViewProps> = ({
         <div className="pointer-events-auto flex gap-1 bg-[#061d40]/95 backdrop-blur-md p-1 rounded-full border border-[#d4af37]/40 shadow-[0_0_0_1px_rgba(255,229,143,0.08),0_10px_30px_rgba(0,0,0,0.35)] font-sans">
           <button
             onClick={() => onFilterZoneChange('all')}
-            className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
-              filterZone === 'all'
+            className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${filterZone === 'all'
                 ? 'bg-gradient-to-r from-[#1d4ed8] via-[#1e3a8a] to-[#08153b] text-white border border-[#d4af37]/50 shadow-[0_0_18px_rgba(29,78,216,0.35)]'
                 : 'text-slate-300 hover:text-white'
-            }`}
+              }`}
           >
             {t.zones.all}
           </button>
@@ -403,11 +461,10 @@ export const MapView: React.FC<MapViewProps> = ({
             <button
               key={zone}
               onClick={() => onFilterZoneChange(zone)}
-              className={`px-2.5 py-1 rounded-full border text-xs font-bold transition-all cursor-pointer ${
-                filterZone === zone
+              className={`px-2.5 py-1 rounded-full border text-xs font-bold transition-all cursor-pointer ${filterZone === zone
                   ? 'bg-gradient-to-r from-[#1d4ed8] via-[#1e3a8a] to-[#08153b] text-white border-[#d4af37]/60 shadow-[0_0_18px_rgba(212,175,55,0.22)]'
                   : 'bg-[#041530] border-[#d4af37]/30 text-[#ffd77a]'
-              }`}
+                }`}
             >
               Z{zone}
             </button>
