@@ -96,7 +96,7 @@ export const MapView: React.FC<MapViewProps> = ({
     import.meta.env.VITE_GEOAPIFY_API_KEY ||
     import.meta.env.GEO_MAP_KEY ||
     GEO_MAP_KEY;
-  const CARTO_TOKEN = import.meta.env.VITE_CARTO_MAP_API || '';
+  const CARTO_TOKEN = import.meta.env.VITE_PROTOMAPS_CARTO_API || import.meta.env.VITE_CARTO_MAP_API || '';
 
   const [mapStyle, setMapStyle] = useState<'online' | 'offline'>('online');
   const mapContainerRef = useRef<HTMLDivElement>(null);
@@ -187,7 +187,7 @@ export const MapView: React.FC<MapViewProps> = ({
     });
 
     const cartoUrl = CARTO_TOKEN
-      ? `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?api_key=${encodeURIComponent(CARTO_TOKEN)}`
+      ? `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?key=${encodeURIComponent(CARTO_TOKEN)}`
       : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
 
     const cartoLayer = L.tileLayer(cartoUrl, {

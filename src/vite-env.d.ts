@@ -6,6 +6,7 @@ interface ImportMetaEnv {
   readonly VITE_GEOAPIFY_MAP_TILES_API?: string;
   readonly VITE_GEOAPIFY_GEOCODING_API?: string;
   readonly VITE_CARTO_MAP_API?: string;
+  readonly VITE_PROTOMAPS_CARTO_API?: string;
 }
 
 interface ImportMeta {
