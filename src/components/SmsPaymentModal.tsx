@@ -228,8 +228,8 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
           <label className="block text-xs font-bold text-[#d4af37] uppercase tracking-wider mb-2">
             3. {t.smsPayment.selectDuration}
           </label>
-          <div className="grid grid-cols-5 gap-1.5">
-            {[1, 2, 3, 4].map((h) => (
+          <div className="grid grid-cols-4 gap-1.5">
+            {[1, 2, 3].map((h) => (
               <button
                 key={h}
                 type="button"

@@ -89,11 +89,21 @@ export const MapView: React.FC<MapViewProps> = ({
       markersRef.current[lot.id] = marker;
     });
   }, [parkingLots, filterZone]);
-  const CARTO_TOKEN = import.meta.env.VITE_CARTO_MAP_API;
+  const GEO_MAP_KEY = '4b59ef066c8947618d81a98bc78622ab';
+  const GEOAPIFY_API_KEY =
+    import.meta.env.VITE_GEOAPIFY_MAP_TILES_API ||
+    import.meta.env.VITE_GEOAPIFY_STATIC_API ||
+    import.meta.env.VITE_GEOAPIFY_API_KEY ||
+    import.meta.env.GEO_MAP_KEY ||
+    GEO_MAP_KEY;
+  const CARTO_TOKEN = import.meta.env.VITE_CARTO_MAP_API || '';
+
   const [mapStyle, setMapStyle] = useState<'online' | 'offline'>('online');
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
-  const onlineLayerRef = useRef<L.TileLayer | null>(null);
+  const geoapifyLayerRef = useRef<L.TileLayer | null>(null);
+  const cartoLayerRef = useRef<L.TileLayer | null>(null);
+  const activeOnlineLayerRef = useRef<L.TileLayer | null>(null);
   const offlineLayerRef = useRef<L.TileLayer | null>(null);
   const userMarkerRef = useRef<L.Marker | null>(null);
   const markersRef = useRef<Record<string, L.Marker>>({});
@@ -120,13 +130,20 @@ export const MapView: React.FC<MapViewProps> = ({
 
   const handleToggleMapStyle = () => {
     const map = mapRef.current;
-    const onlineLayer = onlineLayerRef.current;
+    const activeOnlineLayer = activeOnlineLayerRef.current || geoapifyLayerRef.current;
     const offlineLayer = offlineLayerRef.current;
-    if (!map || !onlineLayer || !offlineLayer) return;
+    if (!map || !activeOnlineLayer || !offlineLayer) return;
 
     if (mapStyle === 'online') {
-      if (map.hasLayer(onlineLayer)) map.removeLayer(onlineLayer);
-      if (!map.hasLayer(offlineLayer)) offlineLayer.addTo(map);
+      if (geoapifyLayerRef.current && map.hasLayer(geoapifyLayerRef.current)) {
+        map.removeLayer(geoapifyLayerRef.current);
+      }
+      if (cartoLayerRef.current && map.hasLayer(cartoLayerRef.current)) {
+        map.removeLayer(cartoLayerRef.current);
+      }
+      if (!map.hasLayer(offlineLayer)) {
+        offlineLayer.addTo(map);
+      }
       map.setMinZoom(14);
       map.setMaxZoom(17);
       map.setZoom(15);
@@ -134,15 +151,20 @@ export const MapView: React.FC<MapViewProps> = ({
       return;
     }
 
-    if (map.hasLayer(offlineLayer)) map.removeLayer(offlineLayer);
-    if (!map.hasLayer(onlineLayer)) onlineLayer.addTo(map);
+    if (map.hasLayer(offlineLayer)) {
+      map.removeLayer(offlineLayer);
+    }
+    const targetOnlineLayer = activeOnlineLayerRef.current || geoapifyLayerRef.current;
+    if (targetOnlineLayer && !map.hasLayer(targetOnlineLayer)) {
+      targetOnlineLayer.addTo(map);
+    }
     map.setMinZoom(3);
     map.setMaxZoom(20);
     map.setZoom(14);
     setMapStyle('online');
   };
 
-  // Initialise Leaflet map with Carto raster tiles
+  // Initialise Leaflet map with Geoapify osm-liberty (Primary), Carto (Secondary), and Offline tiles
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
     const map = L.map(mapContainerRef.current, {
@@ -153,20 +175,29 @@ export const MapView: React.FC<MapViewProps> = ({
       zoomControl: false,
     });
 
-    const onlineLayer = L.tileLayer(
-      `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?api_key=${encodeURIComponent(CARTO_TOKEN)}`,
-      {
-        subdomains: 'abcd',
-        minZoom: 3,
-        maxZoom: 20,
-        tileSize: 256,
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
-      }
-    );
-    if (!CARTO_TOKEN) {
-      console.warn('CARTO token is missing – map may show "API KEY REQUIRED" watermark');
-    }
+    const isRetina = typeof window !== 'undefined' && window.devicePixelRatio > 1;
+    const geoapifyUrl = `https://maps.geoapify.com/v1/tile/osm-liberty/{z}/{x}/{y}${isRetina ? '@2x' : ''}.png?apiKey=${encodeURIComponent(GEOAPIFY_API_KEY)}`;
+
+    const geoapifyLayer = L.tileLayer(geoapifyUrl, {
+      minZoom: 3,
+      maxZoom: 20,
+      tileSize: 256,
+      attribution:
+        'Powered by <a href="https://www.geoapify.com/" target="_blank">Geoapify</a> | &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    });
+
+    const cartoUrl = CARTO_TOKEN
+      ? `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?api_key=${encodeURIComponent(CARTO_TOKEN)}`
+      : 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
+
+    const cartoLayer = L.tileLayer(cartoUrl, {
+      subdomains: 'abcd',
+      minZoom: 3,
+      maxZoom: 20,
+      tileSize: 256,
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    });
 
     const offlineLayer = L.tileLayer('/tile/{z}/{x}/{y}.webp', {
       minZoom: 14,
@@ -178,57 +209,122 @@ export const MapView: React.FC<MapViewProps> = ({
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     });
 
-    onlineLayerRef.current = onlineLayer;
+    geoapifyLayerRef.current = geoapifyLayer;
+    cartoLayerRef.current = cartoLayer;
+    activeOnlineLayerRef.current = geoapifyLayer;
     offlineLayerRef.current = offlineLayer;
 
-    let onlineLoaded = false;
-    let usingOfflineLayer = false;
-    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let currentLayerType: 'geoapify' | 'carto' | 'offline' = 'geoapify';
+    let geoapifyLoaded = false;
+    let cartoLoaded = false;
+    let timeoutGeoapify: ReturnType<typeof setTimeout> | null = null;
+    let timeoutCarto: ReturnType<typeof setTimeout> | null = null;
 
-    const switchToOfflineLayer = () => {
-      if (usingOfflineLayer) return;
-      usingOfflineLayer = true;
-      if (map.hasLayer(onlineLayer)) {
-        map.removeLayer(onlineLayer);
+    const switchToCarto = () => {
+      if (currentLayerType === 'carto' || currentLayerType === 'offline') return;
+      console.warn('Geoapify primary map unavailable. Switching to secondary CARTO tiles.');
+      currentLayerType = 'carto';
+      activeOnlineLayerRef.current = cartoLayer;
+      if (map.hasLayer(geoapifyLayer)) map.removeLayer(geoapifyLayer);
+      if (!map.hasLayer(cartoLayer)) cartoLayer.addTo(map);
+
+      // Start fallback timer for Carto -> Offline
+      if (!timeoutCarto) {
+        timeoutCarto = setTimeout(() => {
+          if (!cartoLoaded || !navigator.onLine) {
+            switchToOffline();
+          }
+        }, 6000);
       }
-      offlineLayer.addTo(map);
+    };
+
+    const switchToOffline = () => {
+      if (currentLayerType === 'offline') return;
+      console.warn('Online map tiles unavailable. Switching to local offline tiles.');
+      currentLayerType = 'offline';
+      if (map.hasLayer(geoapifyLayer)) map.removeLayer(geoapifyLayer);
+      if (map.hasLayer(cartoLayer)) map.removeLayer(cartoLayer);
+      if (!map.hasLayer(offlineLayer)) offlineLayer.addTo(map);
       map.setMinZoom(14);
       map.setMaxZoom(17);
       map.setZoom(15);
       setMapStyle('offline');
     };
 
-    const scheduleOfflineFallback = () => {
-      if (timeoutId || usingOfflineLayer) return;
-      timeoutId = setTimeout(() => {
-        timeoutId = null;
-        if (!onlineLoaded || !navigator.onLine) {
-          console.warn('Carto raster tiles unavailable for 10s. Switching to local offline tiles.');
-          switchToOfflineLayer();
-        }
-      }, 10000);
+    const switchToGeoapify = () => {
+      if (currentLayerType === 'geoapify') return;
+      currentLayerType = 'geoapify';
+      activeOnlineLayerRef.current = geoapifyLayer;
+      if (map.hasLayer(offlineLayer)) map.removeLayer(offlineLayer);
+      if (map.hasLayer(cartoLayer)) map.removeLayer(cartoLayer);
+      if (!map.hasLayer(geoapifyLayer)) geoapifyLayer.addTo(map);
+      map.setMinZoom(3);
+      map.setMaxZoom(20);
+      setMapStyle('online');
     };
 
-    onlineLayer.on('load', () => {
-      onlineLoaded = true;
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-        timeoutId = null;
+    geoapifyLayer.on('load', () => {
+      geoapifyLoaded = true;
+      if (timeoutGeoapify) {
+        clearTimeout(timeoutGeoapify);
+        timeoutGeoapify = null;
       }
     });
 
-    onlineLayer.addTo(map);
+    cartoLayer.on('load', () => {
+      cartoLoaded = true;
+      if (timeoutCarto) {
+        clearTimeout(timeoutCarto);
+        timeoutCarto = null;
+      }
+    });
 
-    scheduleOfflineFallback();
-    window.addEventListener('offline', scheduleOfflineFallback);
+    geoapifyLayer.on('tileerror', () => {
+      if (!geoapifyLoaded) {
+        switchToCarto();
+      }
+    });
+
+    cartoLayer.on('tileerror', () => {
+      if (!cartoLoaded) {
+        switchToOffline();
+      }
+    });
+
+    // Add primary Geoapify layer initially
+    geoapifyLayer.addTo(map);
+
+    // Fallback schedule if primary doesn't load within 6s
+    timeoutGeoapify = setTimeout(() => {
+      if (!geoapifyLoaded || !navigator.onLine) {
+        switchToCarto();
+      }
+    }, 6000);
+
+    const handleOfflineEvent = () => {
+      switchToOffline();
+    };
+
+    const handleOnlineEvent = () => {
+      if (currentLayerType === 'offline') {
+        switchToGeoapify();
+      }
+    };
+
+    window.addEventListener('offline', handleOfflineEvent);
+    window.addEventListener('online', handleOnlineEvent);
 
     mapRef.current = map;
     return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-      window.removeEventListener('offline', scheduleOfflineFallback);
+      if (timeoutGeoapify) clearTimeout(timeoutGeoapify);
+      if (timeoutCarto) clearTimeout(timeoutCarto);
+      window.removeEventListener('offline', handleOfflineEvent);
+      window.removeEventListener('online', handleOnlineEvent);
       map.remove();
       mapRef.current = null;
-      onlineLayerRef.current = null;
+      geoapifyLayerRef.current = null;
+      cartoLayerRef.current = null;
+      activeOnlineLayerRef.current = null;
       offlineLayerRef.current = null;
     };
   }, []);

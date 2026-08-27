@@ -68,7 +68,17 @@ export const QuickSmsPanel: React.FC<QuickSmsPanelProps> = ({
     );
 
     onSessionStarted(session);
-    window.location.href = smsUri;
+
+    if (isDayTicket) {
+      window.location.href = smsUri;
+      return;
+    }
+
+    for (let i = 0; i < hours; i++) {
+      setTimeout(() => {
+        window.location.href = generateSmsUri(activeSmsNumber, cleanPlate);
+      }, i * 300);
+    }
   };
 
   return (
@@ -146,8 +156,8 @@ export const QuickSmsPanel: React.FC<QuickSmsPanelProps> = ({
       </div>
 
       {/* Duration Selector */}
-      <div className="grid grid-cols-5 gap-1.5 mt-2">
-        {[1, 2, 3, 4].map((h) => (
+      <div className="grid grid-cols-4 gap-1.5 mt-2">
+        {[1, 2, 3].map((h) => (
           <button
             key={h}
             type="button"
