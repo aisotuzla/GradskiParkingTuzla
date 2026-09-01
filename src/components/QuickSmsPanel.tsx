@@ -68,7 +68,17 @@ export const QuickSmsPanel: React.FC<QuickSmsPanelProps> = ({
     );
 
     onSessionStarted(session);
-    window.location.href = smsUri;
+
+    if (isDayTicket) {
+      window.location.href = smsUri;
+      return;
+    }
+
+    for (let i = 0; i < hours; i++) {
+      setTimeout(() => {
+        window.location.href = generateSmsUri(activeSmsNumber, cleanPlate);
+      }, i * 300);
+    }
   };
 
   return (
