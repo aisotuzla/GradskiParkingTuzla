@@ -4,12 +4,27 @@
   "description": "Parking Tuzla is PWA application for SMS parking payment, navigation and Interactive map for Tuzla city parking zones",
   "icons": [
     {
-      "src": "/pwa-icon-192.webp",
-      "type": "image/webp",
+      "src": "/public/logo75x75.png",
+      "type": "image/png",
+      "sizes": "75x75"
+    },
+    {
+      "src": "/public/logo95x95.png",
+      "type": "image/png",
+      "sizes": "95x95"
+    },
+    {
+      "src": "/public/logo192x192.png",
+      "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/pwa-icon-512.webp",
+      "src": "/public/logo350x350.png",
+      "type": "image/png",
+      "sizes": "350x350"
+    },
+    {
+      "src": "/public/logo512x512.png",
       "type": "image/webp",
       "sizes": "512x512"
     }

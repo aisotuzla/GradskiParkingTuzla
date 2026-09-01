@@ -1,1 +1,23 @@
-{"name":"Gradski Parking Tuzla - Navigacija i SMS","short_name":"Parking Tuzla","description":"PWA Aplikacija za SMS plaćanje parkinga i navigaciju u Tuzli","start_url":"/","display":"standalone","background_color":"#081353ff","theme_color":"#1e40af","lang":"en","scope":"/","icons":[{"src":"pwa-icon-192.webp","sizes":"192x192","type":"image/webp"},{"src":"pwa-icon-512.webp","sizes":"512x512","type":"image/webp"}]}
+{
+    "name": "Gradski Parking Tuzla - Navigacija i SMS",
+    "short_name": "Parking Tuzla",
+    "description": "PWA Aplikacija za SMS plaćanje parkinga i navigaciju u Tuzli",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#081353ff",
+    "theme_color": "#1e40af",
+    "lang": "en",
+    "scope": "/",
+    "icons": [
+        {
+            "src": "logo192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "logo512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
