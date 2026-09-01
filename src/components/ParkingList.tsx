@@ -98,10 +98,10 @@ export const ParkingList: React.FC<ParkingListProps> = ({
         )}
 
         {/* Zone Filter Chips */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+        <div className="grid grid-cols-4 gap-1.5 pt-0.5">
           <button
             onClick={() => setSelectedZone('all')}
-            className={`px-3 py-1 rounded-full text-xs font-extrabold shrink-0 transition-all cursor-pointer ${
+            className={`py-1.5 px-1 rounded-xl text-xs font-extrabold transition-all cursor-pointer text-center truncate ${
               selectedZone === 'all'
                 ? 'bg-gradient-to-r from-[#ffd700] to-[#d4af37] text-[#040e26] shadow-md'
                 : 'bg-[#0b1a45] text-slate-300 border border-[#d4af37]/30 hover:border-[#d4af37]'
@@ -111,33 +111,33 @@ export const ParkingList: React.FC<ParkingListProps> = ({
           </button>
           <button
             onClick={() => setSelectedZone('0')}
-            className={`px-2.5 py-1 rounded-full text-xs font-extrabold shrink-0 border transition-all cursor-pointer ${
+            className={`py-1.5 px-1 rounded-xl text-xs font-extrabold border transition-all cursor-pointer text-center truncate ${
               selectedZone === '0'
                 ? 'bg-red-600 text-white border-red-400 shadow-md'
                 : 'bg-[#0b1a45] border-red-500/40 text-red-400'
             }`}
           >
-            Zona 0 (2.0 KM/h)
+            Zona 0
           </button>
           <button
             onClick={() => setSelectedZone('1')}
-            className={`px-2.5 py-1 rounded-full text-xs font-extrabold shrink-0 border transition-all cursor-pointer ${
+            className={`py-1.5 px-1 rounded-xl text-xs font-extrabold border transition-all cursor-pointer text-center truncate ${
               selectedZone === '1'
                 ? 'bg-sky-600 text-white border-sky-400 shadow-md'
                 : 'bg-[#0b1a45] border-sky-500/40 text-sky-400'
             }`}
           >
-            Zona 1 (1.0 KM/h)
+            Zona 1
           </button>
           <button
             onClick={() => setSelectedZone('2')}
-            className={`px-2.5 py-1 rounded-full text-xs font-extrabold shrink-0 border transition-all cursor-pointer ${
+            className={`py-1.5 px-1 rounded-xl text-xs font-extrabold border transition-all cursor-pointer text-center truncate ${
               selectedZone === '2'
                 ? 'bg-emerald-600 text-white border-emerald-400 shadow-md'
                 : 'bg-[#0b1a45] border-emerald-500/40 text-emerald-400'
             }`}
           >
-            Zona 2 (0.5 KM/h)
+            Zona 2
           </button>
         </div>
       </div>

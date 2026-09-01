@@ -43,6 +43,8 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
     }
   }, [selectedLot]);
 
+  const [showMultiSmsConfirm, setShowMultiSmsConfirm] = useState<boolean>(false);
+
   // Load saved plates
   useEffect(() => {
     if (isOpen) {
@@ -61,12 +63,7 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
   const cleanPlate = sanitizePlate(licensePlate);
   const smsUri = generateSmsUri(activeSmsNumber, cleanPlate);
 
-  const handleSendSms = () => {
-    if (!cleanPlate || cleanPlate.length < 3) {
-      alert(t.smsPayment.invalidPlateAlert);
-      return;
-    }
-
+  const executeSendSms = () => {
     // Create a payment session for UI tracking
     const session = createPaymentSession(
       activeZone,
@@ -85,13 +82,25 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
     }
 
     // Hourly ticket – send one SMS per selected hour.
-    // We use a small delay between messages to give the device time to open the SMS composer.
     for (let i = 0; i < hours; i++) {
       setTimeout(() => {
-        // Regenerate URI each iteration to ensure a fresh navigation.
         window.location.href = generateSmsUri(activeSmsNumber, cleanPlate);
-      }, i * 300); // 300 ms between messages
+      }, i * 300);
     }
+  };
+
+  const handleSendSms = () => {
+    if (!cleanPlate || cleanPlate.length < 3) {
+      alert(t.smsPayment.invalidPlateAlert);
+      return;
+    }
+
+    if (!isDayTicket && hours > 1) {
+      setShowMultiSmsConfirm(true);
+      return;
+    }
+
+    executeSendSms();
   };
 
   const handleCopySms = () => {
@@ -298,6 +307,42 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
           {t.smsPayment.instructions}
         </p>
       </div>
+
+      {/* Multi-SMS Confirmation Modal */}
+      {showMultiSmsConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in font-sans">
+          <div className="w-full max-w-sm bg-gradient-to-b from-[#0b1e4f] via-[#09183d] to-[#040e26] border border-[#d4af37] rounded-2xl p-5 shadow-2xl text-white text-center">
+            <div className="w-12 h-12 rounded-full bg-[#d4af37]/20 border border-[#d4af37] text-[#ffd700] flex items-center justify-center mx-auto mb-3">
+              <MessageSquare className="w-6 h-6" />
+            </div>
+            <h3 className="font-extrabold text-base text-[#ffd700] mb-2 uppercase">
+              Potvrda slanja {hours} SMS poruke
+            </h3>
+            <p className="text-xs text-slate-200 mb-4 leading-relaxed">
+              Odabrali ste trajanje od <strong className="text-[#ffd700]">{hours} sata</strong>. Za plaćanje će biti poslano <strong className="text-[#ffd700]">{hours} posebne SMS poruke</strong> na broj <strong className="text-white">{activeSmsNumber}</strong> (svaka poruka plaća 1 sat parkinga).
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setShowMultiSmsConfirm(false)}
+                className="py-2.5 px-3 rounded-xl bg-slate-800 text-slate-300 text-xs font-bold border border-slate-700 hover:bg-slate-700 cursor-pointer"
+              >
+                Odustani
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMultiSmsConfirm(false);
+                  executeSendSms();
+                }}
+                className="py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#ffd700] to-[#d4af37] text-[#040e26] text-xs font-black shadow-lg hover:brightness-110 cursor-pointer"
+              >
+                Pošalji {hours} SMS
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

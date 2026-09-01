@@ -289,7 +289,7 @@ export default function App() {
           </div>
         ) : (
           /* Normal Tab Screen Views */
-          <div className="w-full h-full overflow-hidden">
+          <div className="w-full h-full flex flex-col overflow-hidden">
             {activeTab === 'map' && (
               <div className="w-full h-full flex flex-col overflow-hidden">
                 {/* Upper 60% MapView */}
