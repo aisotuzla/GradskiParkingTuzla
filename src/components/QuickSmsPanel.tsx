@@ -146,8 +146,8 @@ export const QuickSmsPanel: React.FC<QuickSmsPanelProps> = ({
       </div>
 
       {/* Duration Selector */}
-      <div className="grid grid-cols-5 gap-1.5 mt-2">
-        {[1, 2, 3, 4].map((h) => (
+      <div className="grid grid-cols-4 gap-1.5 mt-2">
+        {[1, 2, 3].map((h) => (
           <button
             key={h}
             type="button"
@@ -167,13 +167,13 @@ export const QuickSmsPanel: React.FC<QuickSmsPanelProps> = ({
         <button
           type="button"
           onClick={() => setIsDayTicket(true)}
-          className={`py-1.5 rounded-xl text-[11px] font-extrabold border transition-all cursor-pointer ${
+          className={`py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer capitalize ${
             isDayTicket
               ? 'bg-[#d4af37] text-[#040e26] border-[#d4af37] shadow-md'
               : 'bg-[#051330] text-slate-300 border-slate-700/60 hover:bg-[#081e42]'
           }`}
         >
-          {t.parkingList.dayPrice}
+          {t.vehicle.day}
         </button>
       </div>
 

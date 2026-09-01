@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Search, MapPin, MessageSquare, Car, Compass, Locate } from 'lucide-react';
+
 import { Language, ParkingLotData, ParkingZone, UserLocation } from '../types';
-import { ZONE_DETAILS } from '../data/parkingData';
 import { TRANSLATIONS } from '../data/translations';
 import { calculateDistanceMeters, formatDistance } from '../services/routingService';
 
@@ -32,18 +32,10 @@ export const ParkingList: React.FC<ParkingListProps> = ({
 
   const t = TRANSLATIONS[currentLang];
 
-  // Extract unique areas
-  const uniqueAreas = useMemo(() => {
-    const areas = new Set(parkingLots.map((l) => l.area));
-    return Array.from(areas);
-  }, [parkingLots]);
-
-  // Calculate distance & sort
   const lotsWithDistance = useMemo(() => {
     return parkingLots.map((lot) => {
       let distMeters = 0;
       if (userLocation) {
-        // lot.coordinates is [lng, lat]
         distMeters = calculateDistanceMeters(
           userLocation.lat,
           userLocation.lng,
@@ -55,28 +47,21 @@ export const ParkingList: React.FC<ParkingListProps> = ({
     });
   }, [parkingLots, userLocation]);
 
-  // Filter & Sort
   const filteredLots = useMemo(() => {
-    let result = lotsWithDistance.filter((lot) => {
+    const result = lotsWithDistance.filter((lot) => {
       const matchesSearch =
         lot.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lot.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lot.area.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesZone = selectedZone === 'all' || lot.zone === selectedZone;
       const matchesArea = selectedArea === 'all' || lot.area === selectedArea;
-
       return matchesSearch && matchesZone && matchesArea;
     });
-
     if (userLocation) {
       result.sort((a, b) => a.distMeters - b.distMeters);
     }
-
     return result;
   }, [lotsWithDistance, searchQuery, selectedZone, selectedArea, userLocation]);
-
-  // Automatic nearest lot selection disabled; user will select manually
-  const closestLotId = null;
 
   const handleStartNavigation = async (lot: ParkingLotData) => {
     if (!userLocation) {
@@ -86,9 +71,9 @@ export const ParkingList: React.FC<ParkingListProps> = ({
   };
 
   return (
-    <div className="flex flex-col min-h-full bg-[#08153b] text-slate-100 p-3 sm:p-4 max-w-md mx-auto font-sans">
+    <div className="flex flex-col h-full bg-[#08153b] text-slate-100 p-3 sm:p-4 max-w-md mx-auto font-sans overflow-hidden">
       {/* Search & Filter Header */}
-      <div className="space-y-2.5 mb-3">
+      <div className="space-y-2.5 mb-3 shrink-0">
         {/* Search Input Bar */}
         <div className="relative">
           <Search className="absolute left-3 top-3 w-4 h-4 text-[#ffd700]" />
@@ -105,7 +90,7 @@ export const ParkingList: React.FC<ParkingListProps> = ({
         {!userLocation && (
           <button
             onClick={onRequestUserLocation}
-            className="w-full py-2 px-3 bg-gradient-to-r from-[#102a70] to-[#1e3a8a] border border-[#d4af37]/50 rounded-xl text-xs font-bold text-[#ffd700] flex items-center justify-center gap-2 hover:brightness-110 transition-all shadow-lg"
+            className="w-full py-2 px-3 bg-gradient-to-r from-[#102a70] to-[#1e3a8b] border border-[#d4af37]/50 rounded-xl text-xs font-bold text-[#ffd700] flex items-center justify-center gap-2 hover:brightness-110 transition-all shadow-lg cursor-pointer"
           >
             <Locate className="w-4 h-4 animate-bounce text-[#ffd700]" />
             <span>{t.parkingList.locateClosest}</span>
@@ -116,7 +101,7 @@ export const ParkingList: React.FC<ParkingListProps> = ({
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
           <button
             onClick={() => setSelectedZone('all')}
-            className={`px-3 py-1 rounded-full text-xs font-extrabold shrink-0 transition-all ${
+            className={`px-3 py-1 rounded-full text-xs font-extrabold shrink-0 transition-all cursor-pointer ${
               selectedZone === 'all'
                 ? 'bg-gradient-to-r from-[#ffd700] to-[#d4af37] text-[#040e26] shadow-md'
                 : 'bg-[#0b1a45] text-slate-300 border border-[#d4af37]/30 hover:border-[#d4af37]'
@@ -126,7 +111,7 @@ export const ParkingList: React.FC<ParkingListProps> = ({
           </button>
           <button
             onClick={() => setSelectedZone('0')}
-            className={`px-2.5 py-1 rounded-full text-xs font-extrabold shrink-0 border transition-all ${
+            className={`px-2.5 py-1 rounded-full text-xs font-extrabold shrink-0 border transition-all cursor-pointer ${
               selectedZone === '0'
                 ? 'bg-red-600 text-white border-red-400 shadow-md'
                 : 'bg-[#0b1a45] border-red-500/40 text-red-400'
@@ -136,7 +121,7 @@ export const ParkingList: React.FC<ParkingListProps> = ({
           </button>
           <button
             onClick={() => setSelectedZone('1')}
-            className={`px-2.5 py-1 rounded-full text-xs font-extrabold shrink-0 border transition-all ${
+            className={`px-2.5 py-1 rounded-full text-xs font-extrabold shrink-0 border transition-all cursor-pointer ${
               selectedZone === '1'
                 ? 'bg-sky-600 text-white border-sky-400 shadow-md'
                 : 'bg-[#0b1a45] border-sky-500/40 text-sky-400'
@@ -146,7 +131,7 @@ export const ParkingList: React.FC<ParkingListProps> = ({
           </button>
           <button
             onClick={() => setSelectedZone('2')}
-            className={`px-2.5 py-1 rounded-full text-xs font-extrabold shrink-0 border transition-all ${
+            className={`px-2.5 py-1 rounded-full text-xs font-extrabold shrink-0 border transition-all cursor-pointer ${
               selectedZone === '2'
                 ? 'bg-emerald-600 text-white border-emerald-400 shadow-md'
                 : 'bg-[#0b1a45] border-emerald-500/40 text-emerald-400'
@@ -157,8 +142,8 @@ export const ParkingList: React.FC<ParkingListProps> = ({
         </div>
       </div>
 
-      {/* Parking Lot Cards */}
-      <div className="space-y-2.5 overflow-y-auto pr-1 custom-scrollbar pb-3">
+      {/* Parking Lot Cards Container - Smooth Native Scrolling */}
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar touch-pan-y space-y-3 pb-24 overscroll-contain">
         {filteredLots.length === 0 ? (
           <div className="text-center py-10 bg-[#0b1a45] border border-slate-700/50 rounded-2xl p-6">
             <Car className="w-10 h-10 text-slate-500 mx-auto mb-2" />
@@ -166,16 +151,13 @@ export const ParkingList: React.FC<ParkingListProps> = ({
           </div>
         ) : (
           filteredLots.map((lot) => {
-            const isClosest = lot.id === closestLotId;
             const isSelected = selectedLot?.id === lot.id;
-
             const borderLeftColor =
               lot.zone === '0'
                 ? 'border-l-4 border-red-500'
                 : lot.zone === '1'
                 ? 'border-l-4 border-sky-500'
                 : 'border-l-4 border-emerald-500';
-
             const zoneTextColor =
               lot.zone === '0'
                 ? 'text-red-400'
@@ -203,14 +185,18 @@ export const ParkingList: React.FC<ParkingListProps> = ({
                         </span>
                       )}
                     </div>
-                    <h3 className="font-bold text-sm text-white mt-0.5 leading-snug">{lot.name}</h3>
+                    <h3 className="font-bold text-sm text-white mt-0.5 leading-snug">
+                      {lot.name}
+                    </h3>
                   </div>
-
                   <div className="text-right shrink-0">
                     <div className="text-sm font-black text-[#d4af37]">
-                      {lot.hourlyPrice.toFixed(1)} <span className="text-[10px] font-normal text-slate-400">KM/h</span>
+                      {lot.hourlyPrice.toFixed(1)}{' '}
+                      <span className="text-[10px] font-normal text-slate-400">KM/h</span>
                     </div>
-                    <div className="text-[10px] text-slate-400">{t.parkingList.dayPrice}: {lot.dailyPrice.toFixed(1)} KM</div>
+                    <div className="text-[10px] text-slate-400">
+                      {t.parkingList.dayPrice}: {lot.dailyPrice.toFixed(1)} KM
+                    </div>
                   </div>
                 </div>
 
@@ -243,23 +229,21 @@ export const ParkingList: React.FC<ParkingListProps> = ({
                 <div className="grid gap-2 pt-2 border-t grid-cols-3 border-slate-700/40">
                   <button
                     onClick={() => onSelectLot(lot)}
-                    className="py-1.5 px-2 rounded-md bg-[#0a1128] hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
+                    className="py-1.5 px-2 rounded-md bg-[#0a1128] hover:bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
                   >
                     <MapPin className="w-3 h-3 text-[#d4af37]" />
                     <span>{t.parkingList.mapButton}</span>
                   </button>
-
                   <button
                     onClick={() => handleStartNavigation(lot)}
-                    className="py-1.5 px-2 rounded-md bg-[#14213d] hover:bg-[#1f2e52] border border-[#d4af37]/30 text-slate-100 text-xs font-semibold flex items-center justify-center gap-1 transition-colors"
+                    className="py-1.5 px-2 rounded-md bg-[#14213d] hover:bg-[#1f2e52] border border-[#d4af37]/30 text-slate-100 text-xs font-semibold flex items-center justify-center gap-1 transition-colors cursor-pointer"
                   >
                     <Compass className="w-3 h-3 text-[#d4af37]" />
                     <span>{t.parkingList.routeButton}</span>
                   </button>
-
                   <button
                     onClick={() => onPaySms(lot)}
-                    className="py-1.5 px-2 rounded-md bg-[#d4af37] hover:bg-[#b8860b] text-[#0a1128] font-bold text-xs flex items-center justify-center gap-1 shadow-md active:scale-95 transition-all"
+                    className="py-1.5 px-2 rounded-md bg-[#d4af37] hover:bg-[#b8860b] text-[#0a1128] font-bold text-xs flex items-center justify-center gap-1 shadow-md active:scale-95 transition-all cursor-pointer"
                   >
                     <MessageSquare className="w-3 h-3 fill-current" />
                     <span>{t.parkingList.paySmsButton}</span>

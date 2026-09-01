@@ -5,12 +5,12 @@
   "icons": [
     {
       "src": "/pwa-icon-192.webp",
-      "type": "image/.webp",
+      "type": "image/webp",
       "sizes": "192x192"
     },
     {
       "src": "/pwa-icon-512.webp",
-      "type": "image/.webp",
+      "type": "image/webp",
       "sizes": "512x512"
     }
   ],

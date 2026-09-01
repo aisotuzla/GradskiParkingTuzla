@@ -154,7 +154,7 @@ export const MapView: React.FC<MapViewProps> = ({
     });
 
     const onlineLayer = L.tileLayer(
-      `https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png?api_key=${encodeURIComponent(CARTO_TOKEN)}`,
+      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
       {
         subdomains: 'abcd',
         minZoom: 3,

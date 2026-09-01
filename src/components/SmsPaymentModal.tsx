@@ -228,8 +228,8 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
           <label className="block text-xs font-bold text-[#d4af37] uppercase tracking-wider mb-2">
             3. {t.smsPayment.selectDuration}
           </label>
-          <div className="grid grid-cols-5 gap-1.5">
-            {[1, 2, 3, 4].map((h) => (
+          <div className="grid grid-cols-4 gap-1.5">
+            {[1, 2, 3].map((h) => (
               <button
                 key={h}
                 type="button"
@@ -249,13 +249,13 @@ export const SmsPaymentModal: React.FC<SmsPaymentModalProps> = ({
             <button
               type="button"
               onClick={() => setIsDayTicket(true)}
-              className={`py-2 rounded-lg text-[11px] font-bold border transition-all cursor-pointer ${
+              className={`py-2 rounded-lg text-xs font-bold border transition-all cursor-pointer capitalize ${
                 isDayTicket
                   ? 'bg-[#d4af37] text-[#0a1128] border-[#d4af37] shadow-md'
                   : 'bg-[#14213d] text-slate-300 border-slate-700 hover:bg-[#1a2a44]'
               }`}
             >
-              {t.smsPayment.dayTicket}
+              {t.vehicle.day}
             </button>
           </div>
         </div>
