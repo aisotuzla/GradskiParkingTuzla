@@ -2,26 +2,51 @@
   "short_name": "Parking Tuzla",
   "name": "Gradski Parking Tuzla - SMS Payment & Navigation",
   "description": "Parking Tuzla is PWA application for SMS parking payment, navigation and Interactive map for Tuzla city parking zones",
-  "icons": [
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "browser"
+  ],
+  "orientation": "portrait",
+  "background_color": "#06127c",
+  "theme_color": "#010375",
+  "categories": [
+    "Parking",
+    "navigation",
+    "Payment"
+  ],
+  "lang": "bs","en"
+  "dir": "ltr", 
+
+ "icons": [
     {
-      "src": "/pwa-icon-192.webp",
-      "type": "image/webp",
+      "src": "/public/logo75x75.png",
+      "type": "image/png",
+      "sizes": "75x75"
+    },
+    {
+      "src": "/public/logo95x95.png",
+      "type": "image/png",
+      "sizes": "95x95"
+    },
+    {
+      "src": "/public/logo192x192.png",
+      "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/pwa-icon-512.webp",
-      "type": "image/webp",
+      "src": "/public/logo350x350.png",
+      "type": "image/png",
+      "sizes": "350x350"
+    },
+    {
+      "src": "/public/logo512x512.png",
+      "type": "image/png",
       "sizes": "512x512"
     }
-  ],
-  "start_url": "/",
-  "background_color": "#06127c",
-  "theme_color": "#010375",
-  "display": "standalone",
-  "orientation": "portrait",
-  "categories": [
-    "navigation",
-    "transportation",
-    "utilities"
-  ]
+  
 }

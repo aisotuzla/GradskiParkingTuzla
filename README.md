@@ -1,4 +1,4 @@
-# 🚗 Gradski Parking Tuzla – SMS Parking & Navigation
+﻿# 🚗 Gradski Parking Tuzla – SMS Parking & Navigation
 
 Gradski(Public) Parking Tuzla is a Progressive Web Application (PWA) that simplifies parking in Tuzla by combining interactive maps, GPS navigation, SMS parking payment, voice commands and offline support into a single mobile-first application.
 
@@ -79,7 +79,7 @@ aiso_tuzla@proton.me
 
 # 🚗 Gradski Parking Tuzla – SMS Parking & Navigation
 
-TuzlaPark je moderna Progressive Web aplikacija koja omogućava brzo pronalaženje parking mjesta, SMS plaćanje parkinga, navigaciju, glasovne komande i rad bez internet veze.
+Gradski Parking Tuzla je moderna Progressive Web aplikacija koja omogućava brzo pronalaženje parking mjesta, jednostavnije SMS plaćanje parkinga, navigaciju, prati vrijeme I salje upozorenja. Arhivira uplate I daje uvid u mjesečnu potrošnju na parkiranje vozila. Ovu aplikaciju ne morate instalirati na googleplay, a nakon prvog korištenja može raditi bez internet veze, I na bilo kojem uređaju - PC, Android I iOS.
 
 ---
 
@@ -90,7 +90,7 @@ TuzlaPark je moderna Progressive Web aplikacija koja omogućava brzo pronalažen
 - Interaktivna mapa parkinga
 - Zone 0, 1 i 2
 - Cijene parkinga
-- SMS plaćanje
+- Jednostavno SMS plaćanje
 - Parking timer
 - Automatska provjera radnog vremena
 
@@ -135,8 +135,6 @@ TuzlaPark je moderna Progressive Web aplikacija koja omogućava brzo pronalažen
 ✔ Navigacija
 
 ✔ GPS lokacija
-
-✔ Glasovne komande
 
 ✔ Offline rad
 
