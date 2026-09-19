@@ -19,7 +19,7 @@
     "navigation",
     "Payment"
   ],
-  "lang": "bs","en"
+  "lang": "bs",
   "dir": "ltr", 
 
  "icons": [
@@ -48,5 +48,5 @@
       "type": "image/png",
       "sizes": "512x512"
     }
-  
+  ]
 }
